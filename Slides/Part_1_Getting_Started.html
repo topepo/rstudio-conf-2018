@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Applied Machine Learning - Getting Started</title>
+    <meta charset="utf-8">
+    <meta name="author" content="Max Kuhn (RStudio)" />
+    <link href="libs/remark-css-0.0.1/example.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Applied Machine Learning - Getting Started
+### Max Kuhn (RStudio)
+
+---
+
+
+
+# Course Overview
+
+&gt; The session will step through the process of building, visualizing, testing and comparing models that are focused on prediction. The goal of the course is to provide a thorough workflow in R that can be used with many different regression or classification techniques. Case studies are used to illustrate functionality.
+
+&gt; _Basic familiarity with R is required._
+
+The *goal* is for you to be able to easily build predictive/machine learning models in R using a variety of packages and model types. 
+
+* "Models that are focused on prediction"... what does that mean?
+
+* "Machine Learning"... so this is deep learning with massive data sets, right? 
+
+The course is broken up into sections for _regression_ (predicting a numeric outcome) and _classification_ (predicting a category). 
+
+
+---
+
+# Why R for Modeling?
+
+.pull-left[
+* _R has cutting edge models_. Machine learning developers in some domains use R as their primary computing environment and their work often results in R packages.
+
+
+* _It is easy to port or link to other applications_. R doesn't try to be everything to everyone. If you prefer models implemented in C, C++, `tensorflow`, `keras`, `python`, `stan`, or `Weka`, you can access these applications without leaving R. 
+]
+
+.pull-right[
+* _R and R packages are built by people who **do** data analysis_. 
+
+* _The S language is very mature_. 
+
+* The machine learning environment in R is extremely rich. 
+]
+
+
+---
+
+# Downsides to Modeling in R
+
+
+.pull-left[
+* R is a data analysis language and is not C or Java. If a high performance deployment is required, R can be treated like a prototyping language.  
+
+* R is mostly memory-bound. There are plenty of exceptions to this though. 
+]
+
+.pull-right[
+The main issue is one of _consistency of interface_. For example: 
+* There are two methods for specifying what terms are in a model&lt;sup&gt;1&lt;/sup&gt;. Not all models have both. 
+
+* 99% of model functions automatically generate dummy variables. 
+
+* Sparse matrices can be used unless the can't. 
+
+* A more egregious example is code consistency (next slide)
+]
+
+.footnote[[1] There are now three but the last one is brand new and will be discussed later.]
+
+
+---
+
+# Syntax for Computing Predicted Class Probabilities
+
+|Function     |Package      |Code                                       |
+|:------------|:------------|:------------------------------------------|
+|`lda`        |`MASS`       |`predict(obj)`                             |
+|`glm`        |`stats`      |`predict(obj, type = "response")`          |
+|`gbm`        |`gbm`        |`predict(obj, type = "response", n.trees)` |
+|`mda`        |`mda`        |`predict(obj, type = "posterior")`         |
+|`rpart`      |`rpart`      |`predict(obj, type = "prob")`              |
+|`Weka`       |`RWeka`      |`predict(obj, type = "probability")`       |
+|`logitboost` |`LogitBoost` |`predict(obj, type = "raw", nIter)`        |
+
+We'll see a solution for this later in the class. 
+
+
+---
+
+# Different Philosophies Used Here
+
+There are two main philosophies to data analysis code that will be discussed in this worksop: 
+
+.pull-left[
+The _tidy modeling_ approach espouses the tenets of the [tidyverse](http://www.tidyverse.org/): 
+1. Reuse existing data structures.
+1. Compose simple functions with the pipe.
+1. Embrace functional programming.
+1. Design for humans.
+
+This approach is exemplified by packages such as [`modelr`](https://cran.r-project.org/package=modelr
+), [`broom`](https://cran.r-project.org/package=broom
+), [`recipes`](https://topepo.github.io/recipes/), and [`rsample`](https://topepo.github.io/rsample/). 
+]
+
+.pull-left[
+The more _traditional approach_ uses high-level syntax and is perhaps the most untidy code that you will encounter. 
+
+[`caret`](https://topepo.github.io/caret) is the primary package for untidy predictive modeling: 
+1. More traditional R coding style.
+1. High-level "I'll do that for you" syntax.
+1. More comprehensive (for now) and less modular.
+1. Contains many optimizations and is easily parallelized.
+]
+
+
+---
+
+# Example Data Set - Regression
+
+For regression problems, we will use the Ames IA housing data. There are 2,930 properties in the data. 
+
+The sale price was recorded along with 81 predictors, including:
+
+* Location (e.g. neighborhood) and lot information.
+* House components (garage, fireplace, pool, porch, etc.).
+* General assessments such as overall quality and condition.
+* Number of bedrooms, baths, and so on. 
+
+More details can be found in [De Cock (2011, Journal of Statistics Education)](http://ww2.amstat.org/publications/jse/v19n3/decock.pdf).
+
+The raw data are at [`http://bit.ly/2whgsQM`](http://bit.ly/2whgsQM). We will use a processed version in the class. 
+
+---
+
+# Example Data Set - Classification
+
+OkCupid is an online data site that serves international users. [Kim and Escobedo-Land (2015, Journal of Statistics Education)](http://ww2.amstat.org/publications/jse/v23n2/kim.pdf) describe a data set where over 50,000 profiles from the San Fransisco area were made available by the company. 
+
+The data contains several types of fields:
+
+* a number of open text essays related to interests and personal descriptions 
+* single choice type fields, such as profession, diet, gender, body type, etc.
+* multiple choice data, including languages spoken, etc.
+* ***no*** usernames or pictures were included. 
+
+We will try to predict whether someone has a profession in the STEM fields (science, technology, engineering, and math) using a random sample of the overall dataset. 
+
+
+---
+
+# Tidyverse Syntax
+
+Many tidyverse functions have syntax unlike base R code. For example:
+
+* vectors of variable names are eschewed in favor of _functional programming_. For example: 
+
+
+```r
+contains("Sepal")
+
+# instead of 
+
+c("Sepal.Width", "Sepal.Length")
+```
+
+* The _pipe_ operator is preferred. For example
+
+
+```r
+merged &lt;- inner_join(a, b)
+
+# is equal to
+
+merged &lt;- a %&gt;%
+  inner_join(b) 
+```
+
+* Functions are more _modular_ than their traditional analogs
+
+---
+
+# Some Example Data Manipulation Code
+
+
+```r
+library(tidyverse)
+
+ames &lt;- 
+  read_delim("http://bit.ly/2whgsQM", delim = "\t") %&gt;%
+  rename_at(vars(contains(' ')), funs(gsub(' ', '_', .))) %&gt;%
+  rename(Sale_Price = SalePrice) %&gt;%
+  filter(!is.na(Electrical)) %&gt;%
+  select(-Order, -PID, -Garage_Yr_Blt)
+
+ames %&gt;%
+  group_by(Alley) %&gt;%
+  summarize(mean_price = mean(Sale_Price/1000),
+            n = sum(!is.na(Sale_Price)))
+```
+
+```
+## # A tibble: 3 x 3
+##   Alley mean_price     n
+##   &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;
+## 1  Grvl   123.5569   120
+## 2  Pave   176.9454    78
+## 3  &lt;NA&gt;   183.4260  2731
+```
+
+
+---
+
+# Example `ggplot2` Code
+
+.pull-left[
+
+
+```r
+library(ggplot2)
+
+ggplot(ames, 
+       aes(x = reorder(Garage_Type, 
+                       Sale_Price),
+           y = Sale_Price)) + 
+  geom_violin() + 
+  coord_trans(y = "log10") + 
+  xlab("Garage Type") + 
+  ylab("Sale Price") + 
+  theme_bw()
+```
+]
+
+.pull-left[
+&lt;img src="Part_1_Getting_Started_files/figure-html/ggplot-example-disp-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+
+---
+
+# Examples of `purrr::map*`
+
+.pull-left[
+
+```r
+library(purrr)
+
+# summarize via purrr::map
+by_alley &lt;- split(ames, ames$Alley)
+is_list(by_alley)
+```
+
+```
+## [1] TRUE
+```
+
+```r
+map(by_alley, nrow)
+```
+
+```
+## $Grvl
+## [1] 120
+## 
+## $Pave
+## [1] 78
+```
+]
+
+.pull-right[
+
+```r
+# or better yet:
+map_int(by_alley, nrow)
+```
+
+```
+## Grvl Pave 
+##  120   78
+```
+
+```r
+# works on non-list vectors too
+ames$Sale_Price %&gt;%
+  map_dbl(function(x) x/1000) %&gt;%
+  head()
+```
+
+```
+## [1] 215.0 105.0 172.0 244.0 189.9 195.5
+```
+]
+
+
+---
+
+# Quick Data Investigation
+
+To get warmed up, let's load the Ames data and do some basic investigations into the variables, such as exploratory visualizations or summary statistics. The idea is to get a feel for the data. 
+
+Take a look at the slip of paper with the course information. On the back are a list of variables in the data set that you should focus on. There are different lists in the class. 
+
+Let's take 10 minutes to work on your own or with someone next to you. Collaboration is highly encouraged!
+
+The data are located at ...
+
+
+---
+
+# Resources
+
+* [`http://www.tidyverse.org/`](http://www.tidyverse.org/)
+
+* [R for Data Science](http://r4ds.had.co.nz/)
+
+* Jenny's  [`purrr` tutorial](https://jennybc.github.io/purrr-tutorial/) or [Happy R Users Purrr](https://www.rstudio.com/resources/videos/happy-r-users-purrr-tutorial/)
+
+* Programming with `dplyr` [vignette](https://cran.r-project.org/web/packages/dplyr/vignettes/programming.html)
+
+* Selva Prabhakaran's [`ggplot2` tutorial](http://r-statistics.co/Complete-Ggplot2-Tutorial-Part1-With-R-Code.html)
+
+* `caret` package [documentation](https://topepo.github.io/caret/)
+
+* [CRAN Machine Learning Task View](https://cran.r-project.org/web/views/MachineLearning.html)
+    </textarea>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"ratio": "16:9",
+"highlightLanguage": "R",
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {window.dispatchEvent(new Event('resize'));});
+(function() {var d = document, s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler"); if (!r) return; s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }"; d.head.appendChild(s);})();</script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+  }
+});
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
