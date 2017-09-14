@@ -42,7 +42,7 @@ Many books and courses portray predictive modeling as a short sprint. A better a
 
 ---
 
-# The Modeling _Process_
+# What the Modeling Process Usually Looks Like
 
 &lt;img src="intro-process-1.svg"&gt;
 
@@ -106,7 +106,206 @@ For stratification:
 
 ---
 
-# Specifying Models in R
+# Ames Housing Data
+
+Let's load the example data set and split it. We'll put 75% into training and 25% into testing. 
+
+
+```r
+library(AmesHousing)
+ames &lt;- make_ames()
+nrow(ames)
+```
+
+```
+## [1] 745
+```
+
+```r
+library(rsample)
+
+# Make sure that you get the same random numbers
+set.seed(4595)
+data_split &lt;- initial_split(ames, strata = "Sale_Price")
+
+ames_train &lt;- training(data_split)
+ames_test  &lt;- testing(data_split)
+
+nrow(ames_train)/nrow(ames)
+```
+
+```
+## [1] 0.7530201
+```
+
+
+---
+
+# Outcome Distributions
+
+.pull-left[
+
+```r
+library(ggplot2)
+## Do the distributions line up? 
+ggplot(ames_train, aes(x = Sale_Price)) + 
+  geom_line(stat = "density", 
+            trim = TRUE) + 
+  geom_line(data = ames_test, 
+            stat = "density", 
+            trim = TRUE, col = "red")
+```
+]
+.pull-right[
+&lt;img src="Part_2_Basic_Principals_files/figure-html/ames-split-dists-dist-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+
+---
+
+# Specifying Models in R Using Formulas
+
+To fit a model to the housing data, the model terms must be specified. Historically, there are two main interfaces for doing this. 
+
+The **formula** interface using R [formula rules](https://cran.r-project.org/doc/manuals/r-release/R-intro.html#Formulae-for-statistical-models) to specify a _symbolic_ representation of the terms and variables. For example:
+
+
+```r
+foo(Sale_Price ~ Neighborhood + Yr_Sold + Neighborhood:Yr_Sold, data = ames_train)
+```
+or
+
+```r
+foo(log10(Sale_Price) ~ ., data = ames_train)
+```
+or
+
+```r
+foo(log10(Sale_Price) ~ ns(Longitude, df = 3) + ns(Latitude, df = 3), data = ames_train)
+```
+
+This is very convenient but it has some disadvantages.  
+
+
+---
+
+# Downsides to Formulas
+
+* You can't nest in-line functions such as `foo(y ~ pca(scale(x1), scale(x2), scale(x3)), data = dat)`.
+
+* All the model matrix calculations happen at once and can't be recycled when uses in a model function. 
+
+* For very _wide_data sets, the formula method can be [extremely inefficient](https://rviews.rstudio.com/2017/03/01/the-r-formula-method-the-bad-parts/). 
+
+* There are limited _roles_ that variables can take which has led to several re-implementations of formulas. 
+
+* Specifying multivariate outcomes 
+
+* Not all model functions have a formula method. 
+
+
+---
+
+# Specifying Models Without Formulas
+
+Some modeling function have the non-formula interface. This usually has arguments for the predictors and the outcome(s):
+
+
+```r
+# Ususally, the variables must all be numeric
+pre_vars &lt;- c("Yr_Sold", "Longitude", "Latitude")
+foo(x = ames_train[, pre_vars],
+    y = ames_train$Sale_Price)
+```
+
+This is inconvenient if you have transformations, factor variables, interactions, or any other operations to apply to the data prior to modeling. 
+
+Overall, it is difficult to predict if a package has one or both of these interfaces. For example, `lm` only has formulas. 
+
+There is a **third interface**, using _recipes_ that will be discussed later that solves some of these issues. 
+
+
+---
+
+# A Linear Regression Model 
+
+Let's start by fitting an ordinary linear regression model to the training set. You cna choose the model terms for your model but I will use:
+
+
+```r
+simple_lm &lt;- lm(log10(Sale_Price) ~ Neighborhood + Yr_Sold + Year_Built + House_Style,
+                data = ames_train)
+```
+
+Before looking at coefficients, we should do some model checking to see if there is anything obviously wrong with the model. 
+
+To get the statistics on the individual data points, we will use the awesome `broom` package:
+
+
+```r
+library(broom)
+simple_lm_values &lt;- augment(simple_lm)
+```
+
+
+---
+
+# Some Basic Diagnostics 
+
+From these results, let's take 10 minutes and do some visualizations: 
+
+* Plot the observed versus fitted values
+
+* Plot the residuals
+
+* Plot the predicted versus residuals
+
+Are there any _downsides_ to this approach? 
+
+
+---
+
+# Overall Model Statistics 
+
+If you use the `summary` method on the `lm` object, the bottom shows some statistics: 
+
+
+```r
+summary(simple_lm)
+```
+
+```
+## &lt;snip&gt;
+## Residual standard error: 0.1088 on 527 degrees of freedom
+## Multiple R-squared:  0.6311,	Adjusted R-squared:  0.608 
+## F-statistic: 27.33 on 33 and 527 DF,  p-value: &lt; 2.2e-16
+```
+
+These statistics are the result of predicting the same data that was used to derive the coefficients. This is problematic because it can lead to (wildly) optimistic results, especially for models that are extremely flexible. 
+
+The tests set is used for assessing performance. **Should we predict the test set** and use those results to estimate these statistics? 
+
+
+---
+
+&lt;img src="nope.png" height="542" width="400"&gt;
+
+(Matthew Inman/Exploding Kittens)
+
+
+---
+
+# Assessing Models
+
+Save the test set until the very end when you have one or two models that are your favorite. 
+
+We'll need to use the training set but....
+
+For some models, it is possible to get very small residuals by predicting the training set. 
+
+That's an issue since we will need to make comparisons between models, create diagnostic plots, etc. 
+
+If only we had a method for getting honest performance estimates from the _training set_... 🤔
 
 
 ---
