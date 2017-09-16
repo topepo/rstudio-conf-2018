@@ -21,12 +21,380 @@ class: center, middle, inverse, title-slide
 
 ---
 
-# Preprocessing, Feature Engineering, and Recipes
+## Preprocessing, Feature Engineering, and Recipes
+
+This part mostly concerns what we can _do_ to our variables to make the models more effective. 
+
+This is mostly related to the predictors. Operations that we might use are:
+
+* transformations of individual predictors or groups of variables,
+
+* alternate encodings of a variable,
+
+* elimination of predictors (unsupervised), etc. 
+
+In statistics, this is generally called _preprocessing_ the data. As usual, the computer science side of modeling has a much flashier name: _feature engineering_. 
+
+---
+
+## Reasons for Modifying the Data
+
+* Some models (_K_-NN, SVMs, PLS, neural networks) require that the predictor variables have the same units. **Centering** and **scaling** the predictors can be used for this purpose. 
+
+* Other models are very sensitive to correlations between the predictors and **filters** or **PCA signal extraction** can improve the model. 
+
+* As we'll see an an example, changing the scale of the predictors using a **transformation** can lead to a big improvement. 
+
+* In other cases, the data can be **encoded** in a way that maximizes its effect on the model. Representing the date as the day or the week can be very effective for modeling public transportation data. 
+
+* Many models cannot cope with missing data so **imputation** strategies might be necessary.  
+
+
+---
+
+## A Bivariate Example
+
+.pull-left[
+The plot on the right shows two predictors from a real _test_ set where the object is to predict the two classes. 
+
+The predictors are strongly correlated and each has a right-skewed distribution. 
+
+There appears to be some class separation but only in the bivariate plot; the individual predictors show poor discrimination of the classes. 
+
+Some models might be sensitive to highly correlated and/or skewed predictors. 
+
+Is there something that we can do to make the predictors _easier for the model to use_?
+
+***Any ideas***?
+]
+.pull-right[
+&lt;img src="Part_3_Feature_Engineering_files/figure-html/bivariate-plot-natural-1.svg" width="90%" style="display: block; margin: auto;" /&gt;
+]
+
+
+
+---
+
+## A Bivariate Example
+
+
+.pull-left[
+We might start by estimating transformations of the predictors to resolve the skewness. 
+
+The Box-Cox transformation is a family of transformations originally designed for the outcomes of models. We can use it here for the predictors. 
+
+It uses the data to estimate a wide variety of transformations including the inverse, log, sqrt, and polynomial functions. 
+
+Using each factor in isolation, both predictors were determined to need inverse transformations (approximately). 
+
+The figure on the right shows the data after these transformations have been applied. 
+
+A logistic regression model shows a substantial improvement in classifying using the altered data. 
+]
+.pull-right[
+&lt;img src="Part_3_Feature_Engineering_files/figure-html/bivariate-plot-inverse-1.svg" width="90%" style="display: block; margin: auto;" /&gt;
+]
+
+---
+
+## Biased and Unbiased Approaches
+
+Let the machine figure it out
+
+
+
+---
+
+## Resampling and Preprocessing 
+
+
+
+---
+
+## Dummy Variables
+
+
+
+
+One common procedure for modeling is to create numeric representations of categorical data. This is usually done via _dummy variables_: a set of binary 0/1 variables for different levels of an R factor. 
+
+For example, the Ames housing data contains a predictor called `Alley` with levels: 'Grvl', 'No_alley_access', 'Pave'. 
+
+Most dummy variable procedures would make two numeric variables from this predictor that are zero for a level and one otherwise:
+
+&lt;table class="table" style="width: auto !important; margin-left: auto; margin-right: auto;"&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th style="text-align:center; border-bottom:hidden; padding-bottom:0; padding-left:3px;padding-right:3px;" colspan="1"&gt;&lt;div style="border-bottom: 1px solid #ddd; padding-bottom: 5px;"&gt;Data&lt;/div&gt;&lt;/th&gt;
+&lt;th style="text-align:center; border-bottom:hidden; padding-bottom:0; padding-left:3px;padding-right:3px;" colspan="2"&gt;&lt;div style="border-bottom: 1px solid #ddd; padding-bottom: 5px;"&gt;Dummy Variables&lt;/div&gt;&lt;/th&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;th style="text-align:left;"&gt;   &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; No_alley_access &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; Pave &lt;/th&gt;
+  &lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td style="text-align:left;"&gt; Grvl &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0 &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style="text-align:left;"&gt; No_alley_access &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0 &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style="text-align:left;"&gt; Pave &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+
+
+---
+
+## Dummy Variables
+
+If there are _C_ levels of the factor, only _C_-1 dummy variables area created since the last can be inferred from the others. There are different contrast schemes for creating the new variables. 
+
+For ordered factors, _polynomial_ contrasts are used. See this [blog post](http://appliedpredictivemodeling.com/blog/2013/10/23/the-basics-of-encoding-categorical-data-for-predictive-models) for more details. 
+
+How do you create them in R? 
+
+The formula method does this for you&lt;sup&gt;1&lt;/sup&gt;. Otherwise, the traditional method is to use the `model.matrix` function to create a matrix. However, there are some caveats to this that can make things difficult. 
+
+We'll show another method for making them shortly. 
+
+.footnote[[1] _Almost always_ at least. Tree- and rule-based model functions do not. Examples are `randomforest:randomForest`, `ranger::ranger`, `rpart::rpart`, `C50::C5.0`, `Cubist::cubist`,  `klaR::NaiveBayes` and others.]
+
+
+---
+
+## Infrequent Levels in Categorical Factors
+
+.pull-left[
+One issue is: what happens when there are very few values of a level? 
+
+Consider the Ames training set and the `Neighborhood` variable.
+
+If these data are resampled, what would happen to Landmark and similar locations when dummy variables are created?
+]
+.pull-right[
+&lt;img src="Part_3_Feature_Engineering_files/figure-html/ames-hood-1.svg" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+
+---
+
+## Infrequent Levels in Categorical Factors
+
+A _zero-variance_ predictor that has only a single value (zero) would be the result. 
+
+For many models (e.g. linear/logistic regression, etc.) would find this numerically problematic and issue a warning and `NA` values for that coefficient. Trees and similar models would not notice. 
+
+There are two main approaches t0 dealing with this: 
+
+ * Run a filter on the training set predictors prior to running the model and remove the zero-variance predictors.
+ * Recode the factor so that infrequently occurring predictors (and possibly new values) are pooled into an "other" category. 
+ 
+However, `model.matrix` and the formula method are incapable of doing either of these. 
+
+
+
+---
+
+## Recipes
+
+Recipes are an alternative method for creating the data frame of predictors for a model. 
+
+They allow for a sequence of _steps_ that define how data should be handled. 
+
+Recall the previous part where we used the formula `log10(Sale_Price) ~ Longitude + Latitude`? These steps are:
+
+* Assign `Sale_Price` to be the outcome
+* Assign `Longitude` and `Latitude` are predictors
+* Log transform the outcome
+
+To start using a recipe, the these steps can be done using 
+
+
+```r
+library(recipes)
+mod_rec &lt;- recipe(Sale_Price ~ Longitude + Latitude, data = ames_train) %&gt;%
+  step_log(Sale_Price, base = 10)
+```
+
+This creates the recipe for data processing (but does not execute it yet)
+
+---
+
+## Recipes and Categorical Predictors
+
+To deal with the dummy variable issue, we can expand the recipe with more steps:
+
+
+```r
+mod_rec &lt;- recipe(Sale_Price ~ Longitude + Latitude + Neighborhood, data = ames_train) %&gt;%
+  step_log(Sale_Price, base = 10) %&gt;%
+  
+  # Lump factor levels that occur in &lt;= 5% of data as "other"
+  step_other(Neighborhood, threshold = 0.05) %&gt;%
+  
+  # Create dummy variables for _any_ factor variables
+  step_dummy(all_nominal()) %&gt;%
+  
+  # Or, if we wanted to just use the filter, this will remove any
+  # factors whose name starts with "Neighborhood" if they only
+  # have a single value
+  step_zv(starts_with("Neighborhood"))
+```
+
+Note that we can use standard `dplyr` selectors as well as some new ones based on the data type (`all_nominal()`) or by their role in the analysis (`all_predictors()`).
+
+
+---
+
+## Preparing the Recipe
+
+Now that we have a preprocessing _specification_, let's run it on the training set to _prepare_ the recipe:
+
+
+```r
+mod_rec_trained &lt;- prep(mod_rec, training = ames_train, retain = TRUE, verbose = TRUE)
+```
+
+```
+## step 1 log training 
+## step 2 other training 
+## step 3 dummy training 
+## step 4 zv training
+```
+
+Here, the "training" is to determine which factors to pool and to enumerate the factor levels of the `Neighborhood` variable, 
+
+`retain` keeps the processed version of the training set around so we don't have to recompute it. 
+
+---
+
+## Preparing the Recipe
+
+
+
+```r
+mod_rec_trained
+```
+
+```
+## Data Recipe
+## 
+## Inputs:
+## 
+##       role #variables
+##    outcome          1
+##  predictor          3
+## 
+## Training data contained 1446 data points and no missing data.
+## 
+## Steps:
+## 
+## Log transformation on Sale_Price [trained]
+## Collapsing factor levels for Neighborhood [trained]
+## Dummy variables from ~Neighborhood [trained]
+## Zero variance filter removed no terms [trained]
+```
+
+
+---
+
+## Getting the Values
+
+Once the recipe is prepared, it can be applied to any data set using `bake`: 
+
+
+```r
+ames_test_dummies &lt;- bake(
+  mod_rec_trained,
+  newdata = ames_test,
+  # Use selectors to specify what variables to return.
+  everything()
+  )
+names(ames_test_dummies)
+```
+
+```
+##  [1] "Sale_Price"                      "Longitude"                      
+##  [3] "Latitude"                        "Neighborhood_Edwards"           
+##  [5] "Neighborhood_Gilbert"            "Neighborhood_North_Ames"        
+##  [7] "Neighborhood_Northridge_Heights" "Neighborhood_Old_Town"          
+##  [9] "Neighborhood_Somerset"           "Neighborhood_other"
+```
+
+If `retain = TRUE` the training set does not need to be "rebaked". The `juice` function can return the processed version of the training data.
+
+
+---
+
+## More Recipe Steps
+
+The package has a [rich set](https://topepo.github.io/recipes/reference/index.html) of steps that can be used including transformations, filters, variable creation and removal, dimension reduction procedures, imputation, and others. 
+
+For example, in the previous bivariate data problem, the Box-Cox transformation was conducted using:
+
+
+```r
+bivariate_rec &lt;- recipe(Class ~ ., data = bivariate_data_train) %&gt;%
+  step_BoxCox(all_predictors())
+
+bivariate_rec &lt;- prep(bivariate_rec, training = bivariate_data_train, verbose = FALSE)
+
+inverse_test_data &lt;- bake(bivariate_rec, newdata = bivariate_data_test, everything())
+```
+
+
+---
+
+## PCA Signal Extraction 
+
+
+---
+
+# Filters 
+
+
+
+---
+
+## Back to the Bivariate Example
+
+.pull-left[
+Recall that even after the Box-Cox transformation was applied to our previous example, there was still a high degree of correlation between the predictors. 
+
+After the transformation, the predictors were centered and scaled, then PCA was conducted. The plot on the right shows the results. 
+
+Recall that PCA has not guarantee that the components are associated with the outcome. In this example, the _least important_ component has the association with the outcome.  
+]
+.pull-right[
+&lt;img src="Part_3_Feature_Engineering_files/figure-html/bivariate-plot-pca-1.svg" width="90%" style="display: block; margin: auto;" /&gt;
+]
+
+
+---
+
+## Recipes
+
+
+
+---
+
+## Recipes and `rsample`
     </textarea>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
 <script>var slideshow = remark.create({
 "ratio": "16:9",
-"highlightLanguage": "R",
 "highlightStyle": "github",
 "highlightLines": true,
 "countIncrementalSlides": false
