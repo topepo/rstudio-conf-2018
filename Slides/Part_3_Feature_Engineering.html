@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Applied Machine Learning - Feature Engineering</title>
+    <title>Applied Machine Learning - Feature Engineering and Preprocessing</title>
     <meta charset="utf-8">
     <meta name="author" content="Max Kuhn (RStudio)" />
     <link href="libs/remark-css-0.0.1/example.css" rel="stylesheet" />
@@ -10,7 +10,7 @@
     <textarea id="source">
 class: center, middle, inverse, title-slide
 
-# Applied Machine Learning - Feature Engineering
+# Applied Machine Learning - Feature Engineering and Preprocessing
 ### Max Kuhn (RStudio)
 
 ---
@@ -18,8 +18,6 @@ class: center, middle, inverse, title-slide
 
 
 
-
----
 
 ## Preprocessing, Feature Engineering, and Recipes
 
@@ -35,6 +33,7 @@ This is mostly related to the predictors. Operations that we might use are:
 
 In statistics, this is generally called _preprocessing_ the data. As usual, the computer science side of modeling has a much flashier name: _feature engineering_. 
 
+
 ---
 
 ## Reasons for Modifying the Data
@@ -48,6 +47,8 @@ In statistics, this is generally called _preprocessing_ the data. As usual, the 
 * In other cases, the data can be **encoded** in a way that maximizes its effect on the model. Representing the date as the day or the week can be very effective for modeling public transportation data. 
 
 * Many models cannot cope with missing data so **imputation** strategies might be necessary.  
+
+* Development of new _features_ that represent something important to the outcome (e.g. compute distances to public transportation, university buildings, public schools, etc.) 
 
 
 ---
@@ -71,6 +72,12 @@ Is there something that we can do to make the predictors _easier for the model t
 &lt;img src="Part_3_Feature_Engineering_files/figure-html/bivariate-plot-natural-1.svg" width="90%" style="display: block; margin: auto;" /&gt;
 ]
 
+???
+Skewed, positive data =&gt; ratios (to me)
+
+Mention the use of logistic regression and ROC curve results.
+
+These data are in the github repo
 
 
 ---
@@ -95,18 +102,25 @@ A logistic regression model shows a substantial improvement in classifying using
 &lt;img src="Part_3_Feature_Engineering_files/figure-html/bivariate-plot-inverse-1.svg" width="90%" style="display: block; margin: auto;" /&gt;
 ]
 
----
+???
+The reason to show the _test data_ (or some other data) is to emphasize that we can visually overfit by reapplying the model to the data (as before).
 
-## Biased and Unbiased Approaches
-
-Let the machine figure it out
-
+Ordinarily, we would not use the test set in this way. When there is enough data, use a random sample (like a validation set) to evaluate the changes. 
 
 
 ---
 
 ## Resampling and Preprocessing 
 
+It is important to realize that almost all preprocessing steps that involve estimation should be bundled inside of the resampling process so that the performance estimates are not biased. 
+
+ * **Bad**: preprocess the data, resample the model
+ * **Good**: resample the preprocessing and modeling
+
+Also:
+
+ * Avoid _information leakage_ by having all operations in the modeling process occur only on the training set. 
+ * Do not reestimating anything on the test set. For example, to center new data, the training set mean is used. 
 
 
 ---
@@ -115,10 +129,9 @@ Let the machine figure it out
 
 
 
-
 One common procedure for modeling is to create numeric representations of categorical data. This is usually done via _dummy variables_: a set of binary 0/1 variables for different levels of an R factor. 
 
-For example, the Ames housing data contains a predictor called `Alley` with levels: 'Grvl', 'No_alley_access', 'Pave'. 
+For example, the Ames housing data contains a predictor called `Alley` with levels: 'Gravel', 'No_Alley_Access', 'Paved'. 
 
 Most dummy variable procedures would make two numeric variables from this predictor that are zero for a level and one otherwise:
 
@@ -130,29 +143,28 @@ Most dummy variable procedures would make two numeric variables from this predic
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;th style="text-align:left;"&gt;   &lt;/th&gt;
-   &lt;th style="text-align:right;"&gt; No_alley_access &lt;/th&gt;
-   &lt;th style="text-align:right;"&gt; Pave &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; No_Alley_Access &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; Paved &lt;/th&gt;
   &lt;/tr&gt;
 &lt;/thead&gt;
 &lt;tbody&gt;
 &lt;tr&gt;
-&lt;td style="text-align:left;"&gt; Grvl &lt;/td&gt;
+&lt;td style="text-align:left;"&gt; Gravel &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 0 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 0 &lt;/td&gt;
   &lt;/tr&gt;
 &lt;tr&gt;
-&lt;td style="text-align:left;"&gt; No_alley_access &lt;/td&gt;
+&lt;td style="text-align:left;"&gt; No_Alley_Access &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 0 &lt;/td&gt;
   &lt;/tr&gt;
 &lt;tr&gt;
-&lt;td style="text-align:left;"&gt; Pave &lt;/td&gt;
+&lt;td style="text-align:left;"&gt; Paved &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 0 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
   &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
-
 
 
 ---
@@ -169,7 +181,10 @@ The formula method does this for you&lt;sup&gt;1&lt;/sup&gt;. Otherwise, the tra
 
 We'll show another method for making them shortly. 
 
-.footnote[[1] _Almost always_ at least. Tree- and rule-based model functions do not. Examples are `randomforest:randomForest`, `ranger::ranger`, `rpart::rpart`, `C50::C5.0`, `Cubist::cubist`,  `klaR::NaiveBayes` and others.]
+.footnote[[1] _Almost always_ at least. Tree- and rule-based model functions do not. Examples are `randomforest::randomForest`, `ranger::ranger`, `rpart::rpart`, `C50::C5.0`, `Cubist::cubist`,  `klaR::NaiveBayes` and others.]
+
+???
+Caveats include new (unseen) levels of a predictor value.
 
 
 ---
@@ -187,6 +202,12 @@ If these data are resampled, what would happen to Landmark and similar locations
 &lt;img src="Part_3_Feature_Engineering_files/figure-html/ames-hood-1.svg" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
+???
+Bring up the idea that these issues are model-dependent and something like trees wouldn't care. 
+
+Mention the alley variable and how almost all properties have no alley access. 
+
+Talk about near-zero-variance predictors. 
 
 ---
 
@@ -196,13 +217,13 @@ A _zero-variance_ predictor that has only a single value (zero) would be the res
 
 For many models (e.g. linear/logistic regression, etc.) would find this numerically problematic and issue a warning and `NA` values for that coefficient. Trees and similar models would not notice. 
 
-There are two main approaches t0 dealing with this: 
+There are two main approaches to dealing with this: 
 
  * Run a filter on the training set predictors prior to running the model and remove the zero-variance predictors.
+ 
  * Recode the factor so that infrequently occurring predictors (and possibly new values) are pooled into an "other" category. 
  
 However, `model.matrix` and the formula method are incapable of doing either of these. 
-
 
 
 ---
@@ -230,6 +251,7 @@ mod_rec &lt;- recipe(Sale_Price ~ Longitude + Latitude, data = ames_train) %&gt;
 
 This creates the recipe for data processing (but does not execute it yet)
 
+
 ---
 
 ## Recipes and Categorical Predictors
@@ -245,12 +267,7 @@ mod_rec &lt;- recipe(Sale_Price ~ Longitude + Latitude + Neighborhood, data = am
   step_other(Neighborhood, threshold = 0.05) %&gt;%
   
   # Create dummy variables for _any_ factor variables
-  step_dummy(all_nominal()) %&gt;%
-  
-  # Or, if we wanted to just use the filter, this will remove any
-  # factors whose name starts with "Neighborhood" if they only
-  # have a single value
-  step_zv(starts_with("Neighborhood"))
+  step_dummy(all_nominal())
 ```
 
 Note that we can use standard `dplyr` selectors as well as some new ones based on the data type (`all_nominal()`) or by their role in the analysis (`all_predictors()`).
@@ -270,18 +287,17 @@ mod_rec_trained &lt;- prep(mod_rec, training = ames_train, retain = TRUE, verbos
 ```
 ## step 1 log training 
 ## step 2 other training 
-## step 3 dummy training 
-## step 4 zv training
+## step 3 dummy training
 ```
 
 Here, the "training" is to determine which factors to pool and to enumerate the factor levels of the `Neighborhood` variable, 
 
 `retain` keeps the processed version of the training set around so we don't have to recompute it. 
 
+
 ---
 
 ## Preparing the Recipe
-
 
 
 ```r
@@ -297,14 +313,13 @@ mod_rec_trained
 ##    outcome          1
 ##  predictor          3
 ## 
-## Training data contained 1446 data points and no missing data.
+## Training data contained 2186 data points and no missing data.
 ## 
 ## Steps:
 ## 
 ## Log transformation on Sale_Price [trained]
 ## Collapsing factor levels for Neighborhood [trained]
-## Dummy variables from ~Neighborhood [trained]
-## Zero variance filter removed no terms [trained]
+## Dummy variables from Neighborhood [trained]
 ```
 
 
@@ -316,24 +331,42 @@ Once the recipe is prepared, it can be applied to any data set using `bake`:
 
 
 ```r
-ames_test_dummies &lt;- bake(
-  mod_rec_trained,
-  newdata = ames_test,
-  # Use selectors to specify what variables to return.
-  everything()
-  )
-names(ames_test_dummies)
+ames_test_dummies &lt;- bake(mod_rec_trained,newdata = ames_test)
+head(ames_test_dummies)
 ```
 
 ```
-##  [1] "Sale_Price"                      "Longitude"                      
-##  [3] "Latitude"                        "Neighborhood_Edwards"           
-##  [5] "Neighborhood_Gilbert"            "Neighborhood_North_Ames"        
-##  [7] "Neighborhood_Northridge_Heights" "Neighborhood_Old_Town"          
-##  [9] "Neighborhood_Somerset"           "Neighborhood_other"
+## # A tibble: 6 x 11
+##   Sale_Price Longitude Latitude Neighborhood_College_Creek
+##        &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;                      &lt;dbl&gt;
+## 1       5.02     -93.6     42.1                          0
+## 2       5.24     -93.6     42.1                          0
+## 3       5.39     -93.6     42.1                          0
+## 4       5.29     -93.6     42.1                          0
+## 5       5.27     -93.6     42.1                          0
+## 6       5.26     -93.6     42.1                          0
+## # ... with 7 more variables: Neighborhood_Old_Town &lt;dbl&gt;,
+## #   Neighborhood_Edwards &lt;dbl&gt;, Neighborhood_Somerset &lt;dbl&gt;,
+## #   Neighborhood_Northridge_Heights &lt;dbl&gt;, Neighborhood_Gilbert &lt;dbl&gt;,
+## #   Neighborhood_Sawyer &lt;dbl&gt;, Neighborhood_other &lt;dbl&gt;
 ```
 
 If `retain = TRUE` the training set does not need to be "rebaked". The `juice` function can return the processed version of the training data.
+
+Selectors can be used with `bake` and the default is `everything()`. 
+
+
+---
+
+## Zero-Variance Filter
+
+Instead of using `step_other`, take 10 minutes and research how to eliminate any zero-variance predictors using the [`recipe` reference site](https://topepo.github.io/recipes/reference/index.html).
+
+Re-run the recipe with this step. 
+
+What were the results? 
+
+Do you prefer either of these approaches to the other? 
 
 
 ---
@@ -351,19 +384,100 @@ bivariate_rec &lt;- recipe(Class ~ ., data = bivariate_data_train) %&gt;%
 
 bivariate_rec &lt;- prep(bivariate_rec, training = bivariate_data_train, verbose = FALSE)
 
-inverse_test_data &lt;- bake(bivariate_rec, newdata = bivariate_data_test, everything())
+inverse_test_data &lt;- bake(bivariate_rec, newdata = bivariate_data_test)
 ```
+
+???
+Show `tidy` method to get the lambda values
 
 
 ---
 
 ## PCA Signal Extraction 
 
+Principal component analysis (PCA) is a multivariate statistical technique that can be used to create artificial new variables from an existing set in a way that:
+
+* The components account for as much as the variation in the original data as possible.
+
+* Each component is uncorrelated with the others. 
+
+* The new variables are _linear combinations_ of all of the input variables and are effectively unitless.
+
+For our purposes, we would use PCA on the _predictors_ to 
+
+* Reduce the number of variables exposed to the model (but this is not feature selection).
+
+* Combat excessive correlations between the predictors (aka multicollinearity).
+
+In this way, the procedure is often called _signal extraction_ but this is poorly names since there is no guarantee that the new variables will have an association with the outcome. 
+
+???
+ No feature selection due to linear combinations
+
 
 ---
 
-# Filters 
+## PCA Signal Extraction 
 
+When PCA is used, it creates the first new variable (called the component or score) to capture as much variation in the predictors as possible. 
+
+After effectively subtracting out this information from the data, the next component accounts for as much of the leftover variation as possible and so on. 
+
+For each component, PCA can calculate how much variation each component captures in the data. 
+
+This procedure exploits the _correlation structure of the data. If there is no relationship between the predictors, PCA doesn't offer much. 
+
+Alternatively, if there are only a handful of underlying unobserved variables that are driving the values of the predictors, a few PCA components might be needed to capture most of the variation.  
+
+Recall our bivariate example used previously. There were two highly correlated predictors. 
+
+???
+For Ames, the lot area, # bed/bath/rooms, internal square footage, #car garage are all proxies for size. 
+
+Chemistry examples for size and charge. 
+
+
+---
+
+## Back to the Bivariate Example - Transformed Data
+
+&lt;img src="Part_3_Feature_Engineering_files/figure-html/bivariate-rec-orig-1.svg" width="40%" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Back to the Bivariate Example - Recipes
+
+We can build on our transformed data recipe and add normalization: 
+
+
+```r
+bivariate_pca &lt;- 
+  recipe(Class ~ PredictorA + PredictorB, data = bivariate_data_train) %&gt;%
+  step_BoxCox(all_predictors()) %&gt;%
+  step_center(all_predictors()) %&gt;%
+  step_scale(all_predictors()) %&gt;%
+  step_pca(all_predictors()) %&gt;%
+  prep(training = bivariate_data_test, verbose = FALSE)
+
+pca_test &lt;- bake(bivariate_pca, newdata = bivariate_data_test)
+
+# Put components axes on the same range
+pca_rng &lt;- extendrange(c(pca_test$PC1, pca_test$PC2))
+
+ggplot(pca_test, aes(x = PC1, y = PC2, color = Class)) +
+  geom_point(alpha = .2, cex = 1.5) + 
+  theme(legend.position = "top") +
+  scale_colour_calc() +
+  xlim(pca_rng) + ylim(pca_rng) + 
+  xlab("Principal Component 1") + ylab("Principal Component 2") 
+```
+
+
+
+???
+Order matters; Box-Cox before centering; 
+
+YJ transformation
 
 
 ---
@@ -375,7 +489,9 @@ Recall that even after the Box-Cox transformation was applied to our previous ex
 
 After the transformation, the predictors were centered and scaled, then PCA was conducted. The plot on the right shows the results. 
 
-Recall that PCA has not guarantee that the components are associated with the outcome. In this example, the _least important_ component has the association with the outcome.  
+Since these two predictors are highly correlated, the first component captures 91.2% of the variation in the original data. However...
+
+...recall that PCA has not guarantee that the components are associated with the outcome. In this example, the _least important_ component has the association with the outcome.  
 ]
 .pull-right[
 &lt;img src="Part_3_Feature_Engineering_files/figure-html/bivariate-plot-pca-1.svg" width="90%" style="display: block; margin: auto;" /&gt;
@@ -384,13 +500,385 @@ Recall that PCA has not guarantee that the components are associated with the ou
 
 ---
 
-## Recipes
+## `recipes` and `rsample`
+
+Let's go back to the Ames housing data and work on building models with recipes using code similar to the previous set of notes. Previously:
+
+
+```r
+library(AmesHousing)
+ames &lt;- make_ames()
+
+library(rsample)
+set.seed(4595)
+data_split &lt;- initial_split(ames, strata = "Sale_Price")
+ames_train &lt;- training(data_split)
+
+set.seed(2453)
+cv_splits &lt;- vfold_cv(ames_train, v = 10, strata = "Sale_Price")
+
+
+rmse &lt;- function(x) sqrt(mean((x$pred - x$Sale_Price)^2))
+```
+
+
+---
+
+## Linear Models Again
+
+Let's add a few extra predictors and add some preprocessing. 
+
+Two numeric predictors are very skewed and could use a transformation (`Lot_Area` and `Gr_Liv_Area`).
+
+We'll add neighborhood in as well and a few other house features. 
+
+The _K_-NN model suggests that the coordinates can be helpful but probably require a nonlinear representation. We can add these using _B-splines_ with 5 degrees of freedom. To evaluate this, we will create two versions of the recipe to evaluate this hypothesis. 
+
+
+```r
+no_coords &lt;- recipe(Sale_Price ~ Bldg_Type + Neighborhood + Year_Built + 
+                      Gr_Liv_Area + Full_Bath + Year_Sold + Lot_Area +
+                      Longitude + Latitude,
+                    data = ames_train) %&gt;%
+  step_log(Sale_Price, base = 10) %&gt;%
+  step_YeoJohnson(Lot_Area, Gr_Liv_Area) %&gt;%
+  step_other(Neighborhood, threshold = 0.05)  %&gt;%
+  step_dummy(all_nominal())
+
+coords &lt;- no_coords %&gt;%
+  step_bs(Longitude, Latitude, options = list(df = 5))
+```
 
 
 
 ---
 
-## Recipes and `rsample`
+## Longitude
+
+.pull-left[
+
+```r
+ggplot(ames_train, 
+       aes(x = Longitude, y = Sale_Price)) + 
+  geom_point(alpha = .5) + 
+  geom_smooth(
+    method = "lm", 
+    formula = y ~ splines::bs(x, 5), 
+    se = FALSE
+  ) + 
+  scale_y_log10()
+```
+]
+.pull-right[
+&lt;img src="Part_3_Feature_Engineering_files/figure-html/longitude-1.svg" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+
+---
+
+## Latitude
+
+.pull-left[
+
+```r
+ggplot(ames_train, 
+       aes(x = Latitude, y = Sale_Price)) + 
+  geom_point(alpha = .5) + 
+  geom_smooth(
+    method = "lm", 
+    formula = y ~ splines::bs(x, 5), 
+    se = FALSE
+  ) + 
+  scale_y_log10()
+```
+]
+.pull-right[
+&lt;img src="Part_3_Feature_Engineering_files/figure-html/latitude-1.svg" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+
+
+---
+
+## Preparing the Recipes
+
+Our first step is the run `prep()` on the `coords` recipe but using each of the analysis sets. `rsample` has a function that is a wrapper around `prep()` that can be used to map over the split objects: 
+
+
+```r
+prepper
+```
+
+```
+## function (split_obj, recipe, ...) 
+## {
+##     prep(recipe, training = analysis(split_obj, recipe = FALSE), 
+##         ...)
+## }
+## &lt;environment: namespace:rsample&gt;
+```
+
+```r
+cv_splits$coords &lt;- map(cv_splits$splits, prepper, recipe = coords, retain = TRUE)
+cv_splits[1:3,]
+```
+
+```
+## # A tibble: 3 x 3
+##         splits     id       coords
+##         &lt;list&gt;  &lt;chr&gt;       &lt;list&gt;
+## 1 &lt;S3: rsplit&gt; Fold01 &lt;S3: recipe&gt;
+## 2 &lt;S3: rsplit&gt; Fold02 &lt;S3: recipe&gt;
+## 3 &lt;S3: rsplit&gt; Fold03 &lt;S3: recipe&gt;
+```
+
+---
+
+## Fitting the Models
+
+We can use code that is very similar to the previous section. 
+
+This code will use the recipe object to get the data. Since each analysis set is used to train the recipe, our previous use of `retain = TRUE` means that the processed version of the data is within the recipe. 
+
+This can be returned via the `juice` function. 
+
+
+```r
+lm_fit_rec &lt;- function(rec_obj, ...) 
+  lm(..., data = juice(rec_obj))
+
+cv_splits$fits &lt;- map(cv_splits$coords, lm_fit_rec, Sale_Price ~ .)
+glance(cv_splits$fits[[1]])
+```
+
+```
+##   r.squared adj.r.squared  sigma statistic p.value df logLik   AIC   BIC
+## 1     0.791         0.788 0.0803       282       0 27   2182 -4308 -4152
+##   deviance df.residual
+## 1     12.5        1938
+```
+
+---
+
+# Predicting the Assessment Set
+
+This is a little more complex. We need three elements contained in our tibble:
+
+ * the split object (to get the assessment data)
+ * the recipe object (to process the data)
+ * the linear model (for predictions)
+
+The function is not too complex:
+
+
+```r
+assess_predictions &lt;- function(split_obj, rec_obj, mod_obj) {
+  raw_data &lt;- assessment(split_obj)
+  proc_x &lt;- bake(rec_obj, newdata = raw_data, all_predictors())
+  assess_pred &lt;- predict(mod_obj, newdata = proc_x)
+  res &lt;- bake(rec_obj, newdata = raw_data, all_outcomes())
+  res$pred &lt;- assess_pred
+  res
+}
+```
+
+
+---
+
+# Predicting the Assessment Set
+
+Since we have three inputs, we will use `purrr`'s `pmap` function to walk along all three columns in the tibble.
+
+
+```r
+cv_splits$pred &lt;- 
+  pmap(
+    lst(
+      split_obj = cv_splits$splits, 
+      rec_obj = cv_splits$coords, 
+      mod_obj = cv_splits$fits
+    ),
+    assess_predictions 
+  )
+```
+
+We do get some warnings that the assessment data are outside the range of the analysis set values: 
+
+```
+## Warning in bs(x = c(-93.6235954, -93.636372, -93.627536, -93.65332,
+## -93.649447, : some 'x' values beyond boundary knots may cause ill-
+## conditioned bases
+```
+
+
+---
+
+# Predicting the Assessment Set
+
+
+```r
+# We retained the assessment predictions:
+head(cv_splits$pred[[1]], 4)
+```
+
+```
+## # A tibble: 4 x 2
+##   Sale_Price  pred
+##        &lt;dbl&gt; &lt;dbl&gt;
+## 1       5.25  5.25
+## 2       5.15  5.14
+## 3       5.34  5.44
+## 4       5.42  5.37
+```
+
+```r
+# Compute the summary statistics
+cv_splits$rmse &lt;- map_dbl(cv_splits$pred, rmse)
+mean(cv_splits$rmse)
+```
+
+```
+## [1] 0.0792
+```
+
+These results are better than our _K_-NN model but "***the only way to be comfortable with your results is to never look at them***".
+
+
+---
+
+# Graphical Checks for Fit
+
+.pull-left[
+
+```r
+assess_pred &lt;- bind_rows(cv_splits$pred) %&gt;%
+  mutate(residual = Sale_Price - pred,
+         Sale_Price = 10^Sale_Price,
+         pred = 10^pred)
+
+ggplot(assess_pred,
+       aes(x = Sale_Price, y = pred)) + 
+  geom_abline(
+    intercept = 0, 
+    slope = 1, 
+    lty = 2
+  )  + 
+  geom_smooth(se = FALSE, col = "red") + 
+  geom_point(alpha = .4)
+```
+]
+.pull-right[
+&lt;img src="Part_3_Feature_Engineering_files/figure-html/lm-obs-pred-show-1.svg" width="80%" style="display: block; margin: auto;" /&gt;
+]
+
+
+---
+
+# Graphical Checks for Fit
+
+The current model is 
+
+ * drastically _over_-predicting the price of two houses
+ * significantly _under_-predicting the price of a number of expensive houses.
+ 
+We would we do next? 
+
+ 1. Try to understand the two big residuals. Are these aberrant houses or does this have something to do with our model? Maybe those extrapolation warnings?
+ 1. Find more predictors that differentiate the more expensive houses with the others.
+ 1. Try a different model.
+
+
+---
+
+# Graphical Checks for Predictors
+
+We have 10 variations of the same model. We can look at their results to try to understand if there are any irrelevant predictors. 
+
+We can get the `lm` summary table using `broom`'s `tidy` function on each object and binding the results together: 
+
+
+```r
+coef_summary &lt;- map(cv_splits$fits, tidy) %&gt;% bind_rows
+head(coef_summary)
+```
+
+```
+##          term estimate std.error statistic   p.value
+## 1 (Intercept)  1.61323  2.825233     0.571  5.68e-01
+## 2  Year_Built  0.00242  0.000138    17.511  7.50e-64
+## 3 Gr_Liv_Area  0.33880  0.010313    32.852 1.52e-188
+## 4   Full_Bath -0.00378  0.005150    -0.735  4.63e-01
+## 5   Year_Sold -0.00189  0.001397    -1.354  1.76e-01
+## 6    Lot_Area  0.02193  0.001935    11.334  7.09e-29
+```
+
+The `statistic` column corresponds to a 1 degree of freedom _t_-test of the parameter. The residual `df` are fairly high (about 1941) so we can compare these to quantiles of a standard normal distribution. 
+
+
+---
+
+## Some Continuous Predictors
+
+.pull-left[
+
+```r
+num_pred &lt;- c("Year_Built", "Gr_Liv_Area", 
+              "Full_Bath", "Year_Sold", 
+              "Lot_Area")
+z_lim &lt;- qnorm(c(0.025, 0.975))
+coef_summary %&gt;% 
+  filter(term %in% num_pred) %&gt;% 
+  ggplot(aes(x = term, y = statistic)) + 
+  geom_hline(
+    yintercept = z_lim,
+    lty = 2, 
+    col = "red"
+  ) + 
+  geom_jitter(
+    width = .1, 
+    alpha = .4, 
+    cex = 2
+  ) + 
+  coord_flip() + 
+  xlab("")
+```
+]
+.pull-right[
+&lt;img src="Part_3_Feature_Engineering_files/figure-html/coef-plots-1-show-1.svg" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+
+---
+
+## Neighborhood
+
+.pull-left[
+
+```r
+coef_summary %&gt;% 
+  filter(grepl("^Neighborhood", term)) %&gt;% 
+  ggplot(aes(x = term, y = statistic)) + 
+  geom_hline(
+    yintercept = z_lim,
+    lty = 2, 
+    col = "red"
+  ) + 
+  geom_jitter(
+    width = .1, 
+    alpha = .4, 
+    cex = 2
+  ) + 
+  coord_flip() + 
+  xlab("") + 
+  ylab(
+    paste("Difference from", 
+          levels(ames_test$Neighborhood)[1])
+  ) 
+```
+]
+.pull-right[
+&lt;img src="Part_3_Feature_Engineering_files/figure-html/coef-plots-2-show-1.svg" width="100%" style="display: block; margin: auto;" /&gt;
+]
     </textarea>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
 <script>var slideshow = remark.create({
