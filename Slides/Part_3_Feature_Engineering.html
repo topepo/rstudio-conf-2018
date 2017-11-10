@@ -4,7 +4,8 @@
     <title>Applied Machine Learning - Feature Engineering and Preprocessing</title>
     <meta charset="utf-8">
     <meta name="author" content="Max Kuhn (RStudio)" />
-    <link href="libs/remark-css-0.0.1/example.css" rel="stylesheet" />
+    <link rel="stylesheet" href="mtheme_max.css" type="text/css" />
+    <link rel="stylesheet" href="fonts_mtheme_max.css" type="text/css" />
   </head>
   <body>
     <textarea id="source">
@@ -19,7 +20,7 @@ class: center, middle, inverse, title-slide
 
 
 
-## Preprocessing, Feature Engineering, and Recipes
+# Preprocessing, Feature Engineering, and Recipes
 
 This part mostly concerns what we can _do_ to our variables to make the models more effective. 
 
@@ -36,7 +37,7 @@ In statistics, this is generally called _preprocessing_ the data. As usual, the 
 
 ---
 
-## Reasons for Modifying the Data
+# Reasons for Modifying the Data
 
 * Some models (_K_-NN, SVMs, PLS, neural networks) require that the predictor variables have the same units. **Centering** and **scaling** the predictors can be used for this purpose. 
 
@@ -53,7 +54,7 @@ In statistics, this is generally called _preprocessing_ the data. As usual, the 
 
 ---
 
-## A Bivariate Example
+# A Bivariate Example
 
 .pull-left[
 The plot on the right shows two predictors from a real _test_ set where the object is to predict the two classes. 
@@ -82,7 +83,7 @@ These data are in the github repo
 
 ---
 
-## A Bivariate Example
+# A Bivariate Example
 
 
 .pull-left[
@@ -110,7 +111,7 @@ Ordinarily, we would not use the test set in this way. When there is enough data
 
 ---
 
-## Resampling and Preprocessing 
+# Resampling and Preprocessing 
 
 It is important to realize that almost all preprocessing steps that involve estimation should be bundled inside of the resampling process so that the performance estimates are not biased. 
 
@@ -125,7 +126,7 @@ Also:
 
 ---
 
-## Dummy Variables
+# Dummy Variables &lt;img src="rsample.png" class="title-hex"&gt;
 
 
 
@@ -169,7 +170,7 @@ Most dummy variable procedures would make two numeric variables from this predic
 
 ---
 
-## Dummy Variables
+# Dummy Variables
 
 If there are _C_ levels of the factor, only _C_-1 dummy variables area created since the last can be inferred from the others. There are different contrast schemes for creating the new variables. 
 
@@ -189,7 +190,7 @@ Caveats include new (unseen) levels of a predictor value.
 
 ---
 
-## Infrequent Levels in Categorical Factors
+# Infrequent Levels in Categorical Factors
 
 .pull-left[
 One issue is: what happens when there are very few values of a level? 
@@ -211,7 +212,7 @@ Talk about near-zero-variance predictors.
 
 ---
 
-## Infrequent Levels in Categorical Factors
+# Infrequent Levels in Categorical Factors
 
 A _zero-variance_ predictor that has only a single value (zero) would be the result. 
 
@@ -228,7 +229,7 @@ However, `model.matrix` and the formula method are incapable of doing either of 
 
 ---
 
-## Recipes
+# Recipes &lt;img src="recipes.png" class="title-hex"&gt;
 
 Recipes are an alternative method for creating the data frame of predictors for a model. 
 
@@ -254,7 +255,7 @@ This creates the recipe for data processing (but does not execute it yet)
 
 ---
 
-## Recipes and Categorical Predictors
+# Recipes and Categorical Predictors &lt;img src="recipes.png" class="title-hex"&gt;
 
 To deal with the dummy variable issue, we can expand the recipe with more steps:
 
@@ -275,7 +276,7 @@ Note that we can use standard `dplyr` selectors as well as some new ones based o
 
 ---
 
-## Preparing the Recipe
+# Preparing the Recipe &lt;img src="recipes.png" class="title-hex"&gt;
 
 Now that we have a preprocessing _specification_, let's run it on the training set to _prepare_ the recipe:
 
@@ -297,7 +298,7 @@ Here, the "training" is to determine which factors to pool and to enumerate the 
 
 ---
 
-## Preparing the Recipe
+# Preparing the Recipe
 
 
 ```r
@@ -325,30 +326,23 @@ mod_rec_trained
 
 ---
 
-## Getting the Values
+# Getting the Values &lt;img src="recipes.png" class="title-hex"&gt;
 
 Once the recipe is prepared, it can be applied to any data set using `bake`: 
 
 
 ```r
 ames_test_dummies &lt;- bake(mod_rec_trained,newdata = ames_test)
-head(ames_test_dummies)
+names(ames_test_dummies)
 ```
 
 ```
-## # A tibble: 6 x 11
-##   Sale_Price Longitude Latitude Neighborhood_College_Creek
-##        &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;                      &lt;dbl&gt;
-## 1       5.02     -93.6     42.1                          0
-## 2       5.24     -93.6     42.1                          0
-## 3       5.39     -93.6     42.1                          0
-## 4       5.29     -93.6     42.1                          0
-## 5       5.27     -93.6     42.1                          0
-## 6       5.26     -93.6     42.1                          0
-## # ... with 7 more variables: Neighborhood_Old_Town &lt;dbl&gt;,
-## #   Neighborhood_Edwards &lt;dbl&gt;, Neighborhood_Somerset &lt;dbl&gt;,
-## #   Neighborhood_Northridge_Heights &lt;dbl&gt;, Neighborhood_Gilbert &lt;dbl&gt;,
-## #   Neighborhood_Sawyer &lt;dbl&gt;, Neighborhood_other &lt;dbl&gt;
+##  [1] "Sale_Price"                      "Longitude"                      
+##  [3] "Latitude"                        "Neighborhood_College_Creek"     
+##  [5] "Neighborhood_Old_Town"           "Neighborhood_Edwards"           
+##  [7] "Neighborhood_Somerset"           "Neighborhood_Northridge_Heights"
+##  [9] "Neighborhood_Gilbert"            "Neighborhood_Sawyer"            
+## [11] "Neighborhood_other"
 ```
 
 If `retain = TRUE` the training set does not need to be "rebaked". The `juice` function can return the processed version of the training data.
@@ -358,7 +352,7 @@ Selectors can be used with `bake` and the default is `everything()`.
 
 ---
 
-## Zero-Variance Filter
+# Zero-Variance Filter
 
 Instead of using `step_other`, take 10 minutes and research how to eliminate any zero-variance predictors using the [`recipe` reference site](https://topepo.github.io/recipes/reference/index.html).
 
@@ -371,7 +365,7 @@ Do you prefer either of these approaches to the other?
 
 ---
 
-## More Recipe Steps
+# More Recipe Steps &lt;img src="recipes.png" class="title-hex"&gt;
 
 The package has a [rich set](https://topepo.github.io/recipes/reference/index.html) of steps that can be used including transformations, filters, variable creation and removal, dimension reduction procedures, imputation, and others. 
 
@@ -393,7 +387,7 @@ Show `tidy` method to get the lambda values
 
 ---
 
-## PCA Signal Extraction 
+# PCA Signal Extraction 
 
 Principal component analysis (PCA) is a multivariate statistical technique that can be used to create artificial new variables from an existing set in a way that:
 
@@ -417,7 +411,7 @@ In this way, the procedure is often called _signal extraction_ but this is poorl
 
 ---
 
-## PCA Signal Extraction 
+# PCA Signal Extraction 
 
 When PCA is used, it creates the first new variable (called the component or score) to capture as much variation in the predictors as possible. 
 
@@ -439,13 +433,13 @@ Chemistry examples for size and charge.
 
 ---
 
-## Back to the Bivariate Example - Transformed Data
+# Back to the Bivariate Example - Transformed Data
 
 &lt;img src="Part_3_Feature_Engineering_files/figure-html/bivariate-rec-orig-1.svg" width="40%" style="display: block; margin: auto;" /&gt;
 
 ---
 
-## Back to the Bivariate Example - Recipes
+# Back to the Bivariate Example - Recipes &lt;img src="ggplot2.png" class="title-hex"&gt;&lt;img src="recipes.png" class="title-hex"&gt;
 
 We can build on our transformed data recipe and add normalization: 
 
@@ -482,7 +476,7 @@ YJ transformation
 
 ---
 
-## Back to the Bivariate Example
+# Back to the Bivariate Example
 
 .pull-left[
 Recall that even after the Box-Cox transformation was applied to our previous example, there was still a high degree of correlation between the predictors. 
@@ -500,7 +494,7 @@ Since these two predictors are highly correlated, the first component captures 9
 
 ---
 
-## `recipes` and `rsample`
+# `recipes` and `rsample` &lt;img src="recipes.png" class="title-hex"&gt;&lt;img src="rsample.png" class="title-hex"&gt;
 
 Let's go back to the Ames housing data and work on building models with recipes using code similar to the previous set of notes. Previously:
 
@@ -516,15 +510,12 @@ ames_train &lt;- training(data_split)
 
 set.seed(2453)
 cv_splits &lt;- vfold_cv(ames_train, v = 10, strata = "Sale_Price")
-
-
-rmse &lt;- function(x) sqrt(mean((x$pred - x$Sale_Price)^2))
 ```
 
 
 ---
 
-## Linear Models Again
+# Linear Models Again &lt;img src="recipes.png" class="title-hex"&gt;
 
 Let's add a few extra predictors and add some preprocessing. 
 
@@ -553,7 +544,7 @@ coords &lt;- no_coords %&gt;%
 
 ---
 
-## Longitude
+# Longitude &lt;img src="ggplot2.png" class="title-hex"&gt;
 
 .pull-left[
 
@@ -576,7 +567,7 @@ ggplot(ames_train,
 
 ---
 
-## Latitude
+# Latitude &lt;img src="ggplot2.png" class="title-hex"&gt;
 
 .pull-left[
 
@@ -600,7 +591,7 @@ ggplot(ames_train,
 
 ---
 
-## Preparing the Recipes
+# Preparing the Recipes &lt;img src="purrr.png" class="title-hex"&gt;&lt;img src="recipes.png" class="title-hex"&gt;
 
 Our first step is the run `prep()` on the `coords` recipe but using each of the analysis sets. `rsample` has a function that is a wrapper around `prep()` that can be used to map over the split objects: 
 
@@ -626,7 +617,7 @@ cv_splits[1:3,]
 ```
 ## # A tibble: 3 x 3
 ##         splits     id       coords
-##         &lt;list&gt;  &lt;chr&gt;       &lt;list&gt;
+## *       &lt;list&gt;  &lt;chr&gt;       &lt;list&gt;
 ## 1 &lt;S3: rsplit&gt; Fold01 &lt;S3: recipe&gt;
 ## 2 &lt;S3: rsplit&gt; Fold02 &lt;S3: recipe&gt;
 ## 3 &lt;S3: rsplit&gt; Fold03 &lt;S3: recipe&gt;
@@ -634,7 +625,7 @@ cv_splits[1:3,]
 
 ---
 
-## Fitting the Models
+# Fitting the Models &lt;img src="broom.png" class="title-hex"&gt;&lt;img src="purrr.png" class="title-hex"&gt;&lt;img src="recipes.png" class="title-hex"&gt;
 
 We can use code that is very similar to the previous section. 
 
@@ -660,7 +651,7 @@ glance(cv_splits$fits[[1]])
 
 ---
 
-# Predicting the Assessment Set
+# Predicting the Assessment Set &lt;img src="recipes.png" class="title-hex"&gt;&lt;img src="rsample.png" class="title-hex"&gt;
 
 This is a little more complex. We need three elements contained in our tibble:
 
@@ -678,6 +669,8 @@ assess_predictions &lt;- function(split_obj, rec_obj, mod_obj) {
   assess_pred &lt;- predict(mod_obj, newdata = proc_x)
   res &lt;- bake(rec_obj, newdata = raw_data, all_outcomes())
   res$pred &lt;- assess_pred
+  # Save the original row number of the data
+  res$row &lt;- as.integer(split_obj, data = "assessment")
   res
 }
 ```
@@ -685,7 +678,7 @@ assess_predictions &lt;- function(split_obj, rec_obj, mod_obj) {
 
 ---
 
-# Predicting the Assessment Set
+# Predicting the Assessment Set &lt;img src="purrr.png" class="title-hex"&gt;
 
 Since we have three inputs, we will use `purrr`'s `pmap` function to walk along all three columns in the tibble.
 
@@ -713,27 +706,32 @@ We do get some warnings that the assessment data are outside the range of the an
 
 ---
 
-# Predicting the Assessment Set
+# Predicting the Assessment Set &lt;img src="purrr.png" class="title-hex"&gt;
 
 
 ```r
+library(yardstick)
+
 # We retained the assessment predictions:
-head(cv_splits$pred[[1]], 4)
+head(cv_splits$pred[[1]], 2)
 ```
 
 ```
-## # A tibble: 4 x 2
-##   Sale_Price  pred
-##        &lt;dbl&gt; &lt;dbl&gt;
-## 1       5.25  5.25
-## 2       5.15  5.14
-## 3       5.34  5.44
-## 4       5.42  5.37
+## # A tibble: 2 x 3
+##   Sale_Price  pred   row
+##        &lt;dbl&gt; &lt;dbl&gt; &lt;int&gt;
+## 1       5.25  5.25     7
+## 2       5.15  5.14    18
 ```
 
 ```r
 # Compute the summary statistics
-cv_splits$rmse &lt;- map_dbl(cv_splits$pred, rmse)
+cv_splits$rmse &lt;- map_dbl(
+  cv_splits$pred, 
+  rmse, 
+  truth = Sale_Price, 
+  estimate = pred
+)
 mean(cv_splits$rmse)
 ```
 
@@ -746,7 +744,7 @@ These results are better than our _K_-NN model but "***the only way to be comfor
 
 ---
 
-# Graphical Checks for Fit
+# Graphical Checks for Fit &lt;img src="dplyr.png" class="title-hex"&gt;&lt;img src="ggplot2.png" class="title-hex"&gt;
 
 .pull-left[
 
@@ -754,7 +752,7 @@ These results are better than our _K_-NN model but "***the only way to be comfor
 assess_pred &lt;- bind_rows(cv_splits$pred) %&gt;%
   mutate(residual = Sale_Price - pred,
          Sale_Price = 10^Sale_Price,
-         pred = 10^pred)
+         pred = 10^pred) 
 
 ggplot(assess_pred,
        aes(x = Sale_Price, y = pred)) + 
@@ -762,9 +760,9 @@ ggplot(assess_pred,
     intercept = 0, 
     slope = 1, 
     lty = 2
-  )  + 
-  geom_smooth(se = FALSE, col = "red") + 
-  geom_point(alpha = .4)
+  ) + 
+  geom_point(alpha = .4)  + 
+  geom_smooth(se = FALSE, col = "red")
 ```
 ]
 .pull-right[
@@ -787,10 +785,78 @@ We would we do next?
  1. Find more predictors that differentiate the more expensive houses with the others.
  1. Try a different model.
 
+Let's merge these data with the original so that we can get more information about the residuals and investigate. 
 
 ---
 
-# Graphical Checks for Predictors
+# How Can We Invstigate This? &lt;img src="dplyr.png" class="title-hex"&gt;&lt;img src="ggplot2.png" class="title-hex"&gt;
+
+.pull-left[
+
+```r
+assess_pred &lt;- assess_pred %&gt;% 
+  arrange(row) %&gt;% 
+  # Since model was on the log scale
+  mutate(
+    ratio = pred/Sale_Price,
+    ratio = ifelse(ratio &lt; 1, -1/ratio, ratio)
+    ) %&gt;% 
+  select(pred, residual, row, ratio) %&gt;% 
+  bind_cols(ames_train) %&gt;%
+  # Make a label for points
+  mutate(
+    label = paste0(
+      "ratio = ", round(ratio, 1), 
+      ", ", Neighborhood, 
+      ", ", House_Style)
+    )
+```
+]
+.pull-right[
+The `ggiraph` or `plotly` packages can be used to interactive with the data. 
+
+```r
+library(ggiraph)
+p &lt;- 
+  ggplot(
+    assess_pred,
+    aes(x = Sale_Price, y = pred)
+  ) + 
+  geom_abline(
+    intercept = 0, 
+    slope = 1, 
+    lty = 2
+  ) + 
+  geom_point_interactive(
+    alpha = .4, aes(tooltip = label)
+  ) + 
+  geom_smooth(se = FALSE, col = "red")
+
+# Convert from ggplot object
+ggiraph(code = print(p))
+```
+]
+
+
+---
+
+# Hover Over Points
+
+
+
+???
+Recall that the retained hoods were
+```
+##  [6] "Neighborhood_College_Creek"     
+##  [5] "Neighborhood_Old_Town"           "Neighborhood_Edwards"           
+##  [7] "Neighborhood_Somerset"           "Neighborhood_Northridge_Heights"
+##  [9] "Neighborhood_Gilbert"            "Neighborhood_Sawyer"            
+## [11] "Neighborhood_other"
+```
+
+---
+
+# Graphical Checks for Predictors &lt;img src="broom.png" class="title-hex"&gt;&lt;img src="dplyr.png" class="title-hex"&gt;&lt;img src="purrr.png" class="title-hex"&gt;
 
 We have 10 variations of the same model. We can look at their results to try to understand if there are any irrelevant predictors. 
 
@@ -817,7 +883,7 @@ The `statistic` column corresponds to a 1 degree of freedom _t_-test of the para
 
 ---
 
-## Some Continuous Predictors
+# Some Continuous Predictors &lt;img src="dplyr.png" class="title-hex"&gt;&lt;img src="ggplot2.png" class="title-hex"&gt;
 
 .pull-left[
 
@@ -850,7 +916,7 @@ coef_summary %&gt;%
 
 ---
 
-## Neighborhood
+# Neighborhood &lt;img src="dplyr.png" class="title-hex"&gt;&lt;img src="ggplot2.png" class="title-hex"&gt;
 
 .pull-left[
 
@@ -883,8 +949,7 @@ coef_summary %&gt;%
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
 <script>var slideshow = remark.create({
 "ratio": "16:9",
-"highlightStyle": "github",
-"highlightLines": true,
+"highlightLanguage": "R",
 "countIncrementalSlides": false
 });
 if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {window.dispatchEvent(new Event('resize'));});
