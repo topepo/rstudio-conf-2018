@@ -8,10 +8,21 @@
 
 body {
   font-family: 'Fira Sans','Droid Serif', 'Palatino Linotype', 'Book Antiqua', Palatino, 'Microsoft YaHei', 'Songti SC', serif;
+  font-size: 120%;
+}
+
+p {
+  font-family: 'Fira Sans','Droid Serif', 'Palatino Linotype', 'Book Antiqua', Palatino, 'Microsoft YaHei', 'Songti SC', serif;
+  font-size: 120%;
+}
+
+ul {
+  font-family: 'Fira Sans','Droid Serif', 'Palatino Linotype', 'Book Antiqua', Palatino, 'Microsoft YaHei', 'Songti SC', serif;
+  font-size: 120%;
 }
 
 .remark-code, .remark-inline-code {
-  font-family: 'Fira Code', 'Lucida Console', Monaco, monospace;
+  font-family: 'Source Code Pro', 'Lucida Console', Monaco, monospace;
   font-size: 80%;
 }
 
