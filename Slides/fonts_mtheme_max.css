@@ -16,9 +16,9 @@ p {
   font-size: 120%;
 }
 
-ul {
+ul, ol {
   font-family: 'Fira Sans','Droid Serif', 'Palatino Linotype', 'Book Antiqua', Palatino, 'Microsoft YaHei', 'Songti SC', serif;
-  font-size: 120%;
+  font-size: 100%;
 }
 
 .remark-code, .remark-inline-code {
