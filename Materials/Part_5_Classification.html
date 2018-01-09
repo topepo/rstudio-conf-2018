@@ -261,7 +261,7 @@ The data are included in the workshop's GitHub repo:
 
 ```r
 library(dplyr)
-load("okc.RData")
+load("Data/okc.RData")
 okc_train %&gt;% dim()
 ```
 
@@ -1090,8 +1090,8 @@ roc_mod &lt;- perf_mod(rs, seed = 2560, iter = 5000)
 ## 
 ## SAMPLING FOR MODEL 'continuous' NOW (CHAIN 1).
 ## 
-## Gradient evaluation took 9.4e-05 seconds
-## 1000 transitions using 10 leapfrog steps per transition would take 0.94 seconds.
+## Gradient evaluation took 0.000238 seconds
+## 1000 transitions using 10 leapfrog steps per transition would take 2.38 seconds.
 ## Adjust your expectations accordingly!
 ## 
 ## 
@@ -1108,62 +1108,12 @@ roc_mod &lt;- perf_mod(rs, seed = 2560, iter = 5000)
 ## Iteration: 4500 / 5000 [ 90%]  (Sampling)
 ## Iteration: 5000 / 5000 [100%]  (Sampling)
 ## 
-##  Elapsed Time: 0.884674 seconds (Warm-up)
-##                0.624121 seconds (Sampling)
-##                1.5088 seconds (Total)
+##  Elapsed Time: 0.90902 seconds (Warm-up)
+##                0.660353 seconds (Sampling)
+##                1.56937 seconds (Total)
 ## 
 ## 
 ## SAMPLING FOR MODEL 'continuous' NOW (CHAIN 2).
-## 
-## Gradient evaluation took 1.8e-05 seconds
-## 1000 transitions using 10 leapfrog steps per transition would take 0.18 seconds.
-## Adjust your expectations accordingly!
-## 
-## 
-## Iteration:    1 / 5000 [  0%]  (Warmup)
-## Iteration:  500 / 5000 [ 10%]  (Warmup)
-## Iteration: 1000 / 5000 [ 20%]  (Warmup)
-## Iteration: 1500 / 5000 [ 30%]  (Warmup)
-## Iteration: 2000 / 5000 [ 40%]  (Warmup)
-## Iteration: 2500 / 5000 [ 50%]  (Warmup)
-## Iteration: 2501 / 5000 [ 50%]  (Sampling)
-## Iteration: 3000 / 5000 [ 60%]  (Sampling)
-## Iteration: 3500 / 5000 [ 70%]  (Sampling)
-## Iteration: 4000 / 5000 [ 80%]  (Sampling)
-## Iteration: 4500 / 5000 [ 90%]  (Sampling)
-## Iteration: 5000 / 5000 [100%]  (Sampling)
-## 
-##  Elapsed Time: 0.772536 seconds (Warm-up)
-##                0.440393 seconds (Sampling)
-##                1.21293 seconds (Total)
-## 
-## 
-## SAMPLING FOR MODEL 'continuous' NOW (CHAIN 3).
-## 
-## Gradient evaluation took 1.7e-05 seconds
-## 1000 transitions using 10 leapfrog steps per transition would take 0.17 seconds.
-## Adjust your expectations accordingly!
-## 
-## 
-## Iteration:    1 / 5000 [  0%]  (Warmup)
-## Iteration:  500 / 5000 [ 10%]  (Warmup)
-## Iteration: 1000 / 5000 [ 20%]  (Warmup)
-## Iteration: 1500 / 5000 [ 30%]  (Warmup)
-## Iteration: 2000 / 5000 [ 40%]  (Warmup)
-## Iteration: 2500 / 5000 [ 50%]  (Warmup)
-## Iteration: 2501 / 5000 [ 50%]  (Sampling)
-## Iteration: 3000 / 5000 [ 60%]  (Sampling)
-## Iteration: 3500 / 5000 [ 70%]  (Sampling)
-## Iteration: 4000 / 5000 [ 80%]  (Sampling)
-## Iteration: 4500 / 5000 [ 90%]  (Sampling)
-## Iteration: 5000 / 5000 [100%]  (Sampling)
-## 
-##  Elapsed Time: 0.764352 seconds (Warm-up)
-##                0.371692 seconds (Sampling)
-##                1.13604 seconds (Total)
-## 
-## 
-## SAMPLING FOR MODEL 'continuous' NOW (CHAIN 4).
 ## 
 ## Gradient evaluation took 1.9e-05 seconds
 ## 1000 transitions using 10 leapfrog steps per transition would take 0.19 seconds.
@@ -1183,9 +1133,59 @@ roc_mod &lt;- perf_mod(rs, seed = 2560, iter = 5000)
 ## Iteration: 4500 / 5000 [ 90%]  (Sampling)
 ## Iteration: 5000 / 5000 [100%]  (Sampling)
 ## 
-##  Elapsed Time: 0.849999 seconds (Warm-up)
-##                0.354684 seconds (Sampling)
-##                1.20468 seconds (Total)
+##  Elapsed Time: 0.790627 seconds (Warm-up)
+##                0.467385 seconds (Sampling)
+##                1.25801 seconds (Total)
+## 
+## 
+## SAMPLING FOR MODEL 'continuous' NOW (CHAIN 3).
+## 
+## Gradient evaluation took 1.8e-05 seconds
+## 1000 transitions using 10 leapfrog steps per transition would take 0.18 seconds.
+## Adjust your expectations accordingly!
+## 
+## 
+## Iteration:    1 / 5000 [  0%]  (Warmup)
+## Iteration:  500 / 5000 [ 10%]  (Warmup)
+## Iteration: 1000 / 5000 [ 20%]  (Warmup)
+## Iteration: 1500 / 5000 [ 30%]  (Warmup)
+## Iteration: 2000 / 5000 [ 40%]  (Warmup)
+## Iteration: 2500 / 5000 [ 50%]  (Warmup)
+## Iteration: 2501 / 5000 [ 50%]  (Sampling)
+## Iteration: 3000 / 5000 [ 60%]  (Sampling)
+## Iteration: 3500 / 5000 [ 70%]  (Sampling)
+## Iteration: 4000 / 5000 [ 80%]  (Sampling)
+## Iteration: 4500 / 5000 [ 90%]  (Sampling)
+## Iteration: 5000 / 5000 [100%]  (Sampling)
+## 
+##  Elapsed Time: 0.73441 seconds (Warm-up)
+##                0.353858 seconds (Sampling)
+##                1.08827 seconds (Total)
+## 
+## 
+## SAMPLING FOR MODEL 'continuous' NOW (CHAIN 4).
+## 
+## Gradient evaluation took 1.8e-05 seconds
+## 1000 transitions using 10 leapfrog steps per transition would take 0.18 seconds.
+## Adjust your expectations accordingly!
+## 
+## 
+## Iteration:    1 / 5000 [  0%]  (Warmup)
+## Iteration:  500 / 5000 [ 10%]  (Warmup)
+## Iteration: 1000 / 5000 [ 20%]  (Warmup)
+## Iteration: 1500 / 5000 [ 30%]  (Warmup)
+## Iteration: 2000 / 5000 [ 40%]  (Warmup)
+## Iteration: 2500 / 5000 [ 50%]  (Warmup)
+## Iteration: 2501 / 5000 [ 50%]  (Sampling)
+## Iteration: 3000 / 5000 [ 60%]  (Sampling)
+## Iteration: 3500 / 5000 [ 70%]  (Sampling)
+## Iteration: 4000 / 5000 [ 80%]  (Sampling)
+## Iteration: 4500 / 5000 [ 90%]  (Sampling)
+## Iteration: 5000 / 5000 [100%]  (Sampling)
+## 
+##  Elapsed Time: 0.811245 seconds (Warm-up)
+##                0.338794 seconds (Sampling)
+##                1.15004 seconds (Total)
 ```
 
 

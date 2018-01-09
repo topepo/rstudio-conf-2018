@@ -187,7 +187,7 @@ In our analysis, the data from 2015-2107 are used for training to see if we can 
 
 
 ```r
-load("car_data.RData")
+load("Data/car_data.RData")
 library(dplyr)
 car_train &lt;- car_data %&gt;%
   filter(model_year &lt; 2018)
@@ -1215,7 +1215,7 @@ mars_gcv_mod$finalModel
 ## GCV 9.01    RSS 22197    GRSq 0.875    RSq 0.886
 ```
 
-It found the same model using GCV. This is not typical but it is faster (4.6-fold). We will exploit this in a moment. 
+It found the same model using GCV. This is not typical but it is faster (4.1-fold). We will exploit this in a moment. 
 
 
 ---
@@ -1458,8 +1458,8 @@ rmse_mod &lt;- perf_mod(rs, seed = 4344, iter = 5000, metric = "RMSE")
 ## 
 ## SAMPLING FOR MODEL 'continuous' NOW (CHAIN 1).
 ## 
-## Gradient evaluation took 8.9e-05 seconds
-## 1000 transitions using 10 leapfrog steps per transition would take 0.89 seconds.
+## Gradient evaluation took 9.2e-05 seconds
+## 1000 transitions using 10 leapfrog steps per transition would take 0.92 seconds.
 ## Adjust your expectations accordingly!
 ## 
 ## 
@@ -1476,37 +1476,12 @@ rmse_mod &lt;- perf_mod(rs, seed = 4344, iter = 5000, metric = "RMSE")
 ## Iteration: 4500 / 5000 [ 90%]  (Sampling)
 ## Iteration: 5000 / 5000 [100%]  (Sampling)
 ## 
-##  Elapsed Time: 0.577157 seconds (Warm-up)
-##                0.647717 seconds (Sampling)
-##                1.22487 seconds (Total)
+##  Elapsed Time: 0.588519 seconds (Warm-up)
+##                0.657722 seconds (Sampling)
+##                1.24624 seconds (Total)
 ## 
 ## 
 ## SAMPLING FOR MODEL 'continuous' NOW (CHAIN 2).
-## 
-## Gradient evaluation took 1.9e-05 seconds
-## 1000 transitions using 10 leapfrog steps per transition would take 0.19 seconds.
-## Adjust your expectations accordingly!
-## 
-## 
-## Iteration:    1 / 5000 [  0%]  (Warmup)
-## Iteration:  500 / 5000 [ 10%]  (Warmup)
-## Iteration: 1000 / 5000 [ 20%]  (Warmup)
-## Iteration: 1500 / 5000 [ 30%]  (Warmup)
-## Iteration: 2000 / 5000 [ 40%]  (Warmup)
-## Iteration: 2500 / 5000 [ 50%]  (Warmup)
-## Iteration: 2501 / 5000 [ 50%]  (Sampling)
-## Iteration: 3000 / 5000 [ 60%]  (Sampling)
-## Iteration: 3500 / 5000 [ 70%]  (Sampling)
-## Iteration: 4000 / 5000 [ 80%]  (Sampling)
-## Iteration: 4500 / 5000 [ 90%]  (Sampling)
-## Iteration: 5000 / 5000 [100%]  (Sampling)
-## 
-##  Elapsed Time: 0.667274 seconds (Warm-up)
-##                0.600604 seconds (Sampling)
-##                1.26788 seconds (Total)
-## 
-## 
-## SAMPLING FOR MODEL 'continuous' NOW (CHAIN 3).
 ## 
 ## Gradient evaluation took 1.7e-05 seconds
 ## 1000 transitions using 10 leapfrog steps per transition would take 0.17 seconds.
@@ -1526,9 +1501,34 @@ rmse_mod &lt;- perf_mod(rs, seed = 4344, iter = 5000, metric = "RMSE")
 ## Iteration: 4500 / 5000 [ 90%]  (Sampling)
 ## Iteration: 5000 / 5000 [100%]  (Sampling)
 ## 
-##  Elapsed Time: 0.67746 seconds (Warm-up)
-##                0.644532 seconds (Sampling)
-##                1.32199 seconds (Total)
+##  Elapsed Time: 0.643331 seconds (Warm-up)
+##                0.543766 seconds (Sampling)
+##                1.1871 seconds (Total)
+## 
+## 
+## SAMPLING FOR MODEL 'continuous' NOW (CHAIN 3).
+## 
+## Gradient evaluation took 1.5e-05 seconds
+## 1000 transitions using 10 leapfrog steps per transition would take 0.15 seconds.
+## Adjust your expectations accordingly!
+## 
+## 
+## Iteration:    1 / 5000 [  0%]  (Warmup)
+## Iteration:  500 / 5000 [ 10%]  (Warmup)
+## Iteration: 1000 / 5000 [ 20%]  (Warmup)
+## Iteration: 1500 / 5000 [ 30%]  (Warmup)
+## Iteration: 2000 / 5000 [ 40%]  (Warmup)
+## Iteration: 2500 / 5000 [ 50%]  (Warmup)
+## Iteration: 2501 / 5000 [ 50%]  (Sampling)
+## Iteration: 3000 / 5000 [ 60%]  (Sampling)
+## Iteration: 3500 / 5000 [ 70%]  (Sampling)
+## Iteration: 4000 / 5000 [ 80%]  (Sampling)
+## Iteration: 4500 / 5000 [ 90%]  (Sampling)
+## Iteration: 5000 / 5000 [100%]  (Sampling)
+## 
+##  Elapsed Time: 0.634543 seconds (Warm-up)
+##                0.627805 seconds (Sampling)
+##                1.26235 seconds (Total)
 ## 
 ## 
 ## SAMPLING FOR MODEL 'continuous' NOW (CHAIN 4).
@@ -1551,9 +1551,9 @@ rmse_mod &lt;- perf_mod(rs, seed = 4344, iter = 5000, metric = "RMSE")
 ## Iteration: 4500 / 5000 [ 90%]  (Sampling)
 ## Iteration: 5000 / 5000 [100%]  (Sampling)
 ## 
-##  Elapsed Time: 0.585525 seconds (Warm-up)
-##                0.558398 seconds (Sampling)
-##                1.14392 seconds (Total)
+##  Elapsed Time: 0.581073 seconds (Warm-up)
+##                0.536392 seconds (Sampling)
+##                1.11746 seconds (Total)
 ```
 
 
