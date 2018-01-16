@@ -212,7 +212,7 @@ This is very convenient but it has some disadvantages.
 
 * You can't nest in-line functions such as `foo(y ~ pca(scale(x1), scale(x2), scale(x3)), data = dat)`.
 
-* All the model matrix calculations happen at once and can't be recycled when uses in a model function. 
+* All the model matrix calculations happen at once and can't be recycled when used in a model function. 
 
 * For very _wide_ data sets, the formula method can be [extremely inefficient](https://rviews.rstudio.com/2017/03/01/the-r-formula-method-the-bad-parts/). 
 
@@ -353,7 +353,7 @@ There are different flavors or resampling but we will focus on two methods.
 ]
 .pull-right[
 <div id="htmlwidget-e58982a10b44179e1d06" style="width:100%;height:480px;" class="grViz html-widget"></div>
-<script type="application/json" data-for="htmlwidget-e58982a10b44179e1d06">{"x":{"diagram":"\ndigraph resampling_diag {\n      \ngraph [layout = dot]\n\nnode [fontname = Helvetica]\n\nall [shape = circle,\n     label = \"All\nData\"]\n\nte [shape = circle,\n    style = filled,\n    color = grey,\n    label = \"Testing\",\n    fillcolor = ivory]\n\ntr [shape = circle,\n    style = filled,\n    color = grey,\n    label = \"Training\",\n    fillcolor = honeydew]\n\nr1 [shape = rectangle,\n    label = \"Resample 1\"]\n\nan1 [shape = oval,\n     style = filled,\n     label = \"Analysis\",\n     fillcolor = honeydew]\nas1 [shape = oval,\n     style = filled,\n     label = \"Assessment\",\n     fillcolor = ivory]\n\nr2 [shape = rectangle,\n    label = \"Resample 2\"]\n      \nan2 [shape = oval,\n     style = filled,\n     label = \"Analysis\",\n     fillcolor = honeydew]\n\nas2 [shape = oval,\n     style = filled,\n     label = \"Assessment\",\n     fillcolor = ivory]\n\nr3 [shape = rectangle,\n    label = \"Resample 3\"]\n      \nan3 [shape = oval,\n     style = filled,\n     label = \"Analysis\",\n     fillcolor = honeydew]\nas3 [shape = oval,\n     style = filled,\n     label = \"Assessment\",\n     fillcolor = ivory]\n\nall -> {tr te }\ntr -> {r1 r2 r3 }\nr1 -> {as1 an1 }\nr2 -> {an2 as2 }\nr3 -> {an3 as3 }\n}\n","config":{"engine":"dot","options":{"width":"100%"}}},"evals":[],"jsHooks":[]}</script>
+<script type="application/json" data-for="htmlwidget-e58982a10b44179e1d06">{"x":{"diagram":"\ndigraph resampling_diag {\n      \ngraph [layout = dot]\n\nnode [fontname = Helvetica]\n\nall [shape = circle,\n     label = \"All\nData\"]\n\nte [shape = circle,\n    style = filled,\n    label = \"Testing\",\n    fillcolor = \"#eeeeb4\"]\n\ntr [shape = circle,\n    style = filled,\n    label = \"Training\",\n    fillcolor = \"#c8d8c2\"]\n\nr1 [shape = rectangle,\n    label = \"Resample 1\"]\n\nan1 [shape = oval,\n     style = filled,\n     label = \"Analysis\",\n     fillcolor = honeydew]\nas1 [shape = oval,\n     style = filled,\n     label = \"Assessment\",\n     fillcolor = ivory]\n\nr2 [shape = rectangle,\n    label = \"Resample 2\"]\n      \nan2 [shape = oval,\n     style = filled,\n     label = \"Analysis\",\n     fillcolor = honeydew]\n\nas2 [shape = oval,\n     style = filled,\n     label = \"Assessment\",\n     fillcolor = ivory]\n\nr3 [shape = rectangle,\n    label = \"Resample 3\"]\n      \nan3 [shape = oval,\n     style = filled,\n     label = \"Analysis\",\n     fillcolor = honeydew]\nas3 [shape = oval,\n     style = filled,\n     label = \"Assessment\",\n     fillcolor = ivory]\n\nall -> {tr te }\ntr -> {r1 r2 r3 }\nr1 -> {as1 an1 }\nr2 -> {an2 as2 }\nr3 -> {an3 as3 }\n}\n","config":{"engine":"dot","options":{"width":"100%"}}},"evals":[],"jsHooks":[]}</script>
 ]
 
 
@@ -791,7 +791,7 @@ t.test(cv_splits$rmse_simple, cv_splits$rmse_knn, paired = TRUE)
 
 Hothorn _et al_ (2012) is the [original paper](https://scholar.google.com/scholar?hl=en&amp;q=analysis+of+benchmark+experiments&amp;btnG=&amp;as_sdt=1%2C7&amp;as_sdtp=) on comparing models using resampling. 
 
-We'll do more extensive with `tidyposterior` soon. 
+We'll do more extensive analyses with `tidyposterior` soon. 
 
 
 ---
@@ -806,7 +806,7 @@ Some models have specific "knobs" to control over-fitting
 
 * neighborhood size in nearest neighbor models is an example
 
-* the number if splits in a tree model
+* the number of splits in a tree model
 
 Often, poor choices for these parameters can result in overfitting
 
@@ -886,7 +886,7 @@ These steps are:
    └── Compute the performance on the assessment set and save 
 &lt;/pre&gt;
 
-In the code below, `split` will be one of element of `cv_splits$splits`
+In the code below, `split` will be one of the elements of `cv_splits$splits`
 
 
 ```r
