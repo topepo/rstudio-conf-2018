@@ -4,7 +4,7 @@
     <title>Applied Machine Learning - Basic Principals</title>
     <meta charset="utf-8">
     <meta name="author" content="Max Kuhn (RStudio)" />
-    <script src="libs/htmlwidgets-0.9/htmlwidgets.js"></script>
+    <script src="libs/htmlwidgets-1.0/htmlwidgets.js"></script>
     <script src="libs/viz-0.3/viz.js"></script>
     <link href="libs/DiagrammeR-styles-0.2/styles.css" rel="stylesheet" />
     <script src="libs/grViz-binding-0.9.2/grViz.js"></script>
@@ -37,7 +37,18 @@ class: center, middle, inverse, title-slide
 
 # Introduction
 
-In this section, we will introduce concepts that are useful for any type of machine learning model. 
+In this section, we will introduce concepts that are useful for any type of machine learning model:
+
+* _modeling_ versus the model
+
+* data splitting
+
+* resampling
+
+* tuning parameters and overfitting
+
+* model tuning
+
 
 Many of these topics will be put into action in later sections.
 
@@ -65,6 +76,12 @@ Many books and courses portray predictive modeling as a short sprint. A better a
 
 &lt;img src="images/intro-process-1.svg"&gt;
 
+
+---
+layout: false
+class: inverse, middle, center
+
+#  Data Usage
 
 ---
 
@@ -181,6 +198,13 @@ ggplot(ames_train, aes(x = Sale_Price)) +
 
 
 ---
+layout: false
+class: inverse, middle, center
+
+#  Creating Models in R
+
+
+---
 
 # Specifying Models in R Using Formulas
 
@@ -276,7 +300,7 @@ names(simple_lm_values)
 
 ---
 
-# Some Basic Diagnostics 
+# Hands-On: Some Basic Diagnostics 
 
 From these results, let's take 10 minutes and do some visualizations: 
 
@@ -287,6 +311,13 @@ From these results, let's take 10 minutes and do some visualizations:
 * Plot the predicted versus residuals
 
 Are there any _downsides_ to this approach? 
+
+
+---
+layout: false
+class: inverse, middle, center
+
+#  Model Evaluation
 
 
 ---
@@ -636,7 +667,7 @@ ames_train %&gt;% dim()
 
 ---
 
-# Partial Residual Plots &lt;img src="images/rsample.png" class="title-hex"&gt;&lt;img src="images/purrr.png" class="title-hex"&gt;&lt;img src="images/broom.png" class="title-hex"&gt;
+# Hands-On: Partial Residual Plots &lt;img src="images/rsample.png" class="title-hex"&gt;&lt;img src="images/purrr.png" class="title-hex"&gt;&lt;img src="images/broom.png" class="title-hex"&gt;
 
 A partial residual plot is used to diagnose what variables _should_ have been in the model. 
 
@@ -649,6 +680,13 @@ We can plot the hold-out residuals versus different variables to understand if t
 Take 10 min and use `ggplot` to investigate the other predictors using the `holdout_results` data frame. `geom_smooth` might come in handy. 
  
 p.s. I have decided that using the `Overall_Qual` variable is cheating; the assessors determine that when they determine the assessment price of the house. 
+
+
+---
+layout: false
+class: inverse, middle, center
+
+#  Tuning Parameters and Overfitting
 
 
 ---
@@ -694,11 +732,11 @@ knn_train_mod &lt;- knnreg(log10(Sale_Price) ~ Longitude + Latitude,
                         data = ames_train,
                         k = 2)
 repredict &lt;- data.frame(price = log10(ames_train$Sale_Price)) %&gt;%
-	mutate(pred = 
-				 	predict(knn_train_mod, 
-				 					newdata = ames_train %&gt;% select(Longitude, Latitude)
-				 	)
-	)
+  mutate(pred = 
+           predict(knn_train_mod, 
+                   newdata = ames_train %&gt;% select(Longitude, Latitude)
+           )
+  )
 
 repredict %&gt;% rsq(truth = "price", estimate = "pred") # &lt;- the ruckus is here
 ```

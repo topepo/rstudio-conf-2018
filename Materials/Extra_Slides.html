@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Applied Machine Learning - Extra Slides</title>
+    <meta charset="utf-8">
+    <meta name="author" content="Max Kuhn (RStudio)" />
+    <link rel="stylesheet" href="mtheme_max.css" type="text/css" />
+    <link rel="stylesheet" href="fonts_mtheme_max.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Applied Machine Learning - Extra Slides
+### Max Kuhn (RStudio)
+
+---
+
+
+
+
+
+
+layout: false
+class: inverse, middle, center
+
+#  Extra Feature Engineering Slides
+
+
+
+
+
+---
+layout: false
+class: inverse, middle, center
+
+# Principal Component Analysis
+
+
+---
+
+# More Recipe Steps &lt;img src="images/recipes.png" class="title-hex"&gt;
+
+The package has a [rich set](https://topepo.github.io/recipes/reference/index.html) of steps that can be used including transformations, filters, variable creation and removal, dimension reduction procedures, imputation, and others. 
+
+For example, in the previous bivariate data problem, the Box-Cox transformation was conducted using:
+
+
+```r
+bivariate_rec &lt;- recipe(Class ~ ., data = bivariate_data_train) %&gt;%
+  step_BoxCox(all_predictors())
+
+bivariate_rec &lt;- prep(bivariate_rec, training = bivariate_data_train, verbose = FALSE)
+
+inverse_test_data &lt;- bake(bivariate_rec, newdata = bivariate_data_test)
+```
+
+???
+Show `tidy` method to get the lambda values
+
+
+---
+
+# Correlated Predictors
+
+In these data there are potential clusters of _highly correlated variables_: 
+
+ * proxies for size: `Lot_Area`, `Gr_Liv_Area`, `First_Flr_SF`, `Bsmt_Unf_SF`, `Full_Bath` etc. 
+ 
+ * quality fields: `Overall_Qual`, `Garage_Qual`, `Kitchen_Qual`, `Exter_Qual`, etc. 
+ 
+It would be nice if we could combine/amalgamate the variables in these clusters into a single variable that represents them. 
+
+Another way of putting this is that we would like to create artificial features of the data that account for a certain amount of variation in the data. 
+
+There are a few different methods that can accomplish this; we will focus on principal component analysis (PCA) as a solution. 
+
+
+---
+
+# PCA Signal Extraction 
+
+Principal component analysis (PCA) is a multivariate statistical technique that can be used to create artificial new variables from an existing set. 
+
+The new variables are created to account for the most variation in the data. In this case, "variation" means correlation. 
+
+Conceptually, PCA determines which variables account for the most correlation in the data and creates a new variable that is a linear combination of all the predictors. 
+
+* This is called the _first principal component_ (aka `PC1`)
+
+* This linear combination emphasizes the variables that are the most correlated. 
+
+The information that PC #1 represents is then _removed from the data_. 
+
+The second PCA component is the linear combination that accounts for the most left-over correlation in the data (and so on). 
+
+
+---
+
+# PCA Signal Extraction 
+
+To recap:
+
+* The components account for as much as the variation in the original data as possible.
+
+* Each component is uncorrelated with the others. 
+
+* The new variables are _linear combinations_ of all of the input variables and are effectively unitless.
+
+
+For our purposes, we would use PCA on the _predictors_ to 
+
+* Reduce the number of variables exposed to the model (but this is not feature selection).
+
+* Combat excessive correlations between the predictors (aka multicollinearity).
+
+In this way, the procedure is often called _signal extraction_ but this is poorly names since there is no guarantee that the new variables will have an association with the outcome. 
+
+???
+ No feature selection due to linear combinations
+
+
+---
+
+# Back to the Bivariate Example - Transformed Data
+
+&lt;img src="Extra_Slides_files/figure-html/bivariate-rec-orig-1.svg" width="40%" style="display: block; margin: auto;" /&gt;
+
+---
+
+# Back to the Bivariate Example - Recipes &lt;img src="images/ggplot2.png" class="title-hex"&gt;&lt;img src="images/recipes.png" class="title-hex"&gt;
+
+We can build on our transformed data recipe and add normalization: 
+
+
+```r
+bivariate_pca &lt;- 
+  recipe(Class ~ PredictorA + PredictorB, data = bivariate_data_train) %&gt;%
+  step_BoxCox(all_predictors()) %&gt;%
+  step_center(all_predictors()) %&gt;%
+  step_scale(all_predictors()) %&gt;%
+  step_pca(all_predictors()) %&gt;%
+  prep(training = bivariate_data_test, verbose = FALSE)
+
+pca_test &lt;- bake(bivariate_pca, newdata = bivariate_data_test)
+
+# Put components axes on the same range
+pca_rng &lt;- extendrange(c(pca_test$PC1, pca_test$PC2))
+
+ggplot(pca_test, aes(x = PC1, y = PC2, color = Class)) +
+  geom_point(alpha = .2, cex = 1.5) + 
+  theme(legend.position = "top") +
+  scale_colour_calc() +
+  xlim(pca_rng) + ylim(pca_rng) + 
+  xlab("Principal Component 1") + ylab("Principal Component 2") 
+```
+
+
+
+???
+Order matters; Box-Cox before centering; 
+
+YJ transformation
+
+
+---
+
+# Back to the Bivariate Example
+
+.pull-left[
+.font90[
+Recall that even after the Box-Cox transformation was applied to our previous example, there was still a high degree of correlation between the predictors. 
+
+After the transformation, the predictors were centered and scaled, then PCA was conducted. The plot on the right shows the results. 
+
+Since these two predictors are highly correlated, the first component captures 91.2% of the variation in the original data. However...
+
+...recall that PCA has not guarantee that the components are associated with the outcome. In this example, the _least important_ component has the association with the outcome.  
+]
+]
+.pull-right[
+&lt;img src="Extra_Slides_files/figure-html/bivariate-plot-pca-1.svg" width="90%" style="display: block; margin: auto;" /&gt;
+]
+
+
+---
+layout: false
+class: inverse, middle, center
+
+# Graphical Checks for Predictors
+
+
+
+
+
+---
+
+# Graphical Checks for Predictors &lt;img src="images/broom.png" class="title-hex"&gt;&lt;img src="images/dplyr.png" class="title-hex"&gt;&lt;img src="images/purrr.png" class="title-hex"&gt;
+
+We have 10 variations of the same model. We can look at their results to try to understand if there are any irrelevant predictors. 
+
+We can get the `lm` summary table using `broom`'s `tidy` function on each object and binding the results together: 
+
+
+```r
+coef_summary &lt;- map(cv_splits$fits, tidy) %&gt;% bind_rows
+head(coef_summary)
+```
+
+```
+##          term estimate std.error statistic   p.value
+## 1 (Intercept)  3.13271  2.866604     1.093  2.75e-01
+## 2  Year_Built  0.00150  0.000349     4.294  1.84e-05
+## 3 Gr_Liv_Area  0.25974  0.008146    31.886 7.18e-180
+## 4   Full_Bath -0.00304  0.004930    -0.617  5.37e-01
+## 5   Year_Sold -0.00163  0.001379    -1.183  2.37e-01
+## 6    Lot_Area  0.02292  0.002194    10.449  6.68e-25
+```
+
+The `statistic` column corresponds to a 1 degree of freedom _t_-test of the parameter. The residual `df` are fairly high (about 1948) so we can compare these to quantiles of a standard normal distribution. 
+
+
+---
+
+# Some Continuous Predictors &lt;img src="images/dplyr.png" class="title-hex"&gt;&lt;img src="images/ggplot2.png" class="title-hex"&gt;
+
+.pull-left[
+
+```r
+num_pred &lt;- c("Year_Built", "Gr_Liv_Area", 
+              "Full_Bath", "Year_Sold", 
+              "Lot_Area")
+z_lim &lt;- qnorm(c(0.025, 0.975))
+coef_summary %&gt;% 
+  filter(term %in% num_pred) %&gt;% 
+  ggplot(aes(x = term, y = statistic)) + 
+  geom_hline(
+    yintercept = z_lim,
+    lty = 2, 
+    col = "red"
+  ) + 
+  geom_jitter(
+    width = .1, 
+    alpha = .4, 
+    cex = 2
+  ) + 
+  coord_flip() + 
+  xlab("")
+```
+]
+.pull-right[
+&lt;img src="Extra_Slides_files/figure-html/coef-plots-1-show-1.svg" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+
+---
+
+# Neighborhood &lt;img src="images/dplyr.png" class="title-hex"&gt;&lt;img src="images/ggplot2.png" class="title-hex"&gt;
+
+.pull-left[
+
+```r
+coef_summary %&gt;% 
+  filter(grepl("^Neighborhood", term)) %&gt;% 
+  ggplot(aes(x = term, y = statistic)) + 
+  geom_hline(
+    yintercept = z_lim,
+    lty = 2, 
+    col = "red"
+  ) + 
+  geom_jitter(
+    width = .1, 
+    alpha = .4, 
+    cex = 2
+  ) + 
+  coord_flip() + 
+  xlab("") + 
+  ylab(
+    paste("Difference from", 
+          levels(ames_test$Neighborhood)[1])
+  ) 
+```
+]
+.pull-right[
+&lt;img src="Extra_Slides_files/figure-html/coef-plots-2-show-1.svg" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+
+
+---
+
+layout: false
+class: inverse, middle, center
+
+#  Extra Regression Analysis Slides
+
+
+---
+layout: false
+class: inverse, middle, center
+
+# Measuring Performance for Numeric Outcomes
+
+
+---
+
+# Hands-On: Illustrative Example  &lt;img src="images/yardstick.png" class="title-hex"&gt;
+
+`yardstick` contains the test set results in a data frame called `solubility_test`:
+
+
+```r
+library(yardstick)
+data(solubility_test)
+str(solubility_test, nchar.max = 70)
+```
+
+```
+## 'data.frame':	316 obs. of  2 variables:
+##  $ solubility: num  0.93 0.85 0.81 0.74 0.61 0.58 0.57 0.56 0.52 0.45 ...
+##  $ prediction: num  0.368 -0.15 -0.505 0.54 -0.479 ...
+```
+
+Take 5 minutes and graphically assess the data set. 
+
+How well do you think that the model worked?
+
+
+---
+
+# Measuring Performance  &lt;img src="images/yardstick.png" class="title-hex"&gt;
+
+The manner in which we measure the model's efficacy can make a big difference in how the model is tuned and viewed. There are a few different options for summarizing performance, including: 
+
+_Root mean squared error_ (RMSE) the model residuals are computed and squared. They are then averaged and the square-root is used to put the value back into the original units. 
+
+
+```r
+rmse(solubility_test, truth = solubility, estimate = prediction)
+```
+
+```
+## [1] 0.722
+```
+
+RMSE is a good metric since it is in the original units and a direct measure of model _accuracy_.   
+
+
+---
+
+# Measuring Performance - R&lt;sup&gt;2&lt;/sup&gt;  &lt;img src="images/yardstick.png" class="title-hex"&gt;
+
+The coefficient of determination (aka R&lt;sup&gt;2&lt;/sup&gt;) is commonly used to evaluate models. In the case of linear regression, R&lt;sup&gt;2&lt;/sup&gt; is the proportion of variation in the data that can be explained by the model. 
+
+Computationally, the most direct method of estimation is to compute the correlation between the observed and predicted values (i.e. R) and square it. 
+
+
+```r
+rsq(solubility_test, truth = solubility, estimate = prediction)
+```
+
+```
+## [1] 0.879
+```
+
+R&lt;sup&gt;2&lt;/sup&gt; can be problematic for a few reasons
+
+* It is a measure of correlation, not accuracy. 
+* It can be artificially inflated when the variation in the outcome is large. 
+
+
+---
+
+# Measuring Performance - R&lt;sup&gt;2&lt;/sup&gt;  &lt;img src="images/yardstick.png" class="title-hex"&gt;
+
+There are more traditional estimates but behave poorly when the model is ineffective.  
+
+
+```r
+library(dplyr)
+set.seed(3545)
+solubility_test &lt;- solubility_test %&gt;% mutate(noise = sample(prediction))
+
+rsq(solubility_test, truth = solubility, estimate = noise)
+```
+
+```
+## [1] 0.00449
+```
+
+```r
+rsq_trad(solubility_test, truth = solubility, estimate = noise)
+```
+
+```
+## [1] -0.792
+```
+
+Both RMSE and R&lt;sup&gt;2&lt;/sup&gt; can be sensitive to outliers since they involved squared terms. This may be good or bad, depending on the problem. 
+
+
+---
+
+# Measuring Performance - Other Approaches  &lt;img src="images/yardstick.png" class="title-hex"&gt;
+
+* In the case where new data points are being ranked (i.e. the most lucrative customer), using _Spearman's rank correlation_ would be a good choice. 
+
+* Robust measures, such as the mean absolute error (MAE) can also be used. 
+
+* When the outcome is highly skewed, the average _fold-difference_ between the observed and predicted values might be helpful. 
+
+* Try to avoid any discretization procedures such as the percentage of samples that are more than 2-fold wrong.
+
+* The best metrics are those that are the most relevant. These may be complex equations that involve other estimates, such as 
+
+  * customer lifetime value
+  * expected return on an investment
+  
+  
+
+---
+
+# Diagnosing the Model
+
+How should we graphically evaluate the model without using the test set? 
+
+The assessment sets from resampling can be used to compute and plot the residuals. _Partial residual plots_ can be created where the residuals are plotted against different (potential) predictors to diagnose predictors that should be included in the model. 
+
+In the case of repeated cross-validation (and others), the sample training set sample might be included in multiple assessment sets. In this case, the predictions can be averaged and these means can be used in visualizations.
+    </textarea>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"ratio": "16:9",
+"highlightLanguage": "R",
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {window.dispatchEvent(new Event('resize'));});
+(function() {var d = document, s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler"); if (!r) return; s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }"; d.head.appendChild(s);})();</script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+  }
+});
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

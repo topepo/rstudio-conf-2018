@@ -38,10 +38,12 @@ ggplot(bivariate_data_test,
            y = PredictorB,
            color = Class)) +
   geom_point(alpha = .3, cex = 1.5) + 
-  theme(legend.position = "top") +
-  scale_colour_calc() 
+  theme(legend.position = "top") 
 
 # Slide 5
+
+library(dplyr)
+library(recipes)
 
 bivariate_rec <- recipe(Class ~ PredictorA + PredictorB, 
                          data = bivariate_data_train) %>%
@@ -57,7 +59,6 @@ ggplot(inverse_test,
            color = Class)) +
   geom_point(alpha = .3, cex = 1.5) + 
   theme(legend.position = "top") +
-  scale_colour_calc() +
   xlab("1/A") + ylab("1/B") 
 
 # Recreate the Ames Data
@@ -116,7 +117,7 @@ mod_rec_trained
 ames_test_dummies <- bake(mod_rec_trained,newdata = ames_test)
 names(ames_test_dummies)
 
-# Slide 18
+# Slide 19
 
 price_breaks <- (1:6)*(10^5)
 
@@ -126,7 +127,7 @@ ggplot(ames_train, aes(x = Year_Built, y = Sale_Price)) +
   scale_y_continuous(breaks = price_breaks, trans = "log10" ) +
   geom_smooth(method = "loess")
 
-# Slide 19
+# Slide 20
 
 library(MASS) # to get robust linear regression model
 
@@ -139,13 +140,13 @@ ggplot(ames_train,
   facet_wrap(~ Central_Air, nrow = 2) +
   geom_smooth(method = "rlm")
 
-# Slide 20
+# Slide 21
 
 mod1 <- lm(log10(Sale_Price) ~ Year_Built + Central_Air, data = ames_train)
 mod2 <- lm(log10(Sale_Price) ~ Year_Built + Central_Air + Year_Built: Central_Air, data = ames_train)
 anova(mod1, mod2)
 
-# Slide 21
+# Slide 33
 
 recipe(Sale_Price ~ Year_Built + Central_Air, data = ames_train) %>%
   step_log(Sale_Price) %>%
@@ -156,40 +157,7 @@ recipe(Sale_Price ~ Year_Built + Central_Air, data = ames_train) %>%
   # select a few rows with different values
   slice(153:157)
 
-# Slide 23
-
-bivariate_rec <- recipe(Class ~ ., data = bivariate_data_train) %>%
-  step_BoxCox(all_predictors())
-
-bivariate_rec <- prep(bivariate_rec, training = bivariate_data_train, verbose = FALSE)
-
-inverse_test_data <- bake(bivariate_rec, newdata = bivariate_data_test)
-
-# Slide 28
-
-bivariate_pca <- 
-  recipe(Class ~ PredictorA + PredictorB, data = bivariate_data_train) %>%
-  step_BoxCox(all_predictors()) %>%
-  step_center(all_predictors()) %>%
-  step_scale(all_predictors()) %>%
-  step_pca(all_predictors()) %>%
-  prep(training = bivariate_data_test, verbose = FALSE)
-
-pca_test <- bake(bivariate_pca, newdata = bivariate_data_test)
-
-# Put components axes on the same range
-pca_rng <- extendrange(c(pca_test$PC1, pca_test$PC2))
-
-ggplot(pca_test, aes(x = PC1, y = PC2, color = Class)) +
-  geom_point(alpha = .2, cex = 1.5) + 
-  theme(legend.position = "top") +
-  scale_colour_calc() +
-  xlim(pca_rng) + ylim(pca_rng) + 
-  xlab("Principal Component 1") + ylab("Principal Component 2") 
-
-
-
-# Slide 31
+# Slide 24
 
 library(AmesHousing)
 ames <- make_ames()
@@ -202,7 +170,7 @@ ames_train <- training(data_split)
 set.seed(2453)
 cv_splits <- vfold_cv(ames_train, v = 10, strata = "Sale_Price")
 
-# Slide 32
+# Slide 25
 
 lin_coords <- recipe(Sale_Price ~ Bldg_Type + Neighborhood + Year_Built + 
                       Gr_Liv_Area + Full_Bath + Year_Sold + Lot_Area +
@@ -217,7 +185,7 @@ lin_coords <- recipe(Sale_Price ~ Bldg_Type + Neighborhood + Year_Built +
 coords <- lin_coords %>%
   step_bs(Longitude, Latitude, options = list(df = 5))
 
-# Slide 33
+# Slide 26
 
 ggplot(ames_train, 
        aes(x = Longitude, y = Sale_Price)) + 
@@ -228,7 +196,7 @@ ggplot(ames_train,
   ) + 
   scale_y_log10()
 
-# Slide 34
+# Slide 27
 
 ggplot(ames_train, 
        aes(x = Latitude, y = Sale_Price)) + 
@@ -239,14 +207,14 @@ ggplot(ames_train,
   ) + 
   scale_y_log10()
 
-# Slide 35
+# Slide 28
 
 prepper
 library(purrr)
 cv_splits <- cv_splits %>% 
   mutate(coords = map(splits, prepper, recipe = coords, retain = TRUE))
 
-# Slide 36
+# Slide 29
 
 lm_fit_rec <- function(rec_obj, ...) 
   lm(..., data = juice(rec_obj))
@@ -255,7 +223,7 @@ cv_splits <- cv_splits %>%
   mutate(fits = map(coords, lm_fit_rec, Sale_Price ~ .))
 glance(cv_splits$fits[[1]])
 
-# Slide 37
+# Slide 30
 
 assess_predictions <- function(split_obj, rec_obj, mod_obj) {
   raw_data <- assessment(split_obj)
@@ -270,7 +238,7 @@ assess_predictions <- function(split_obj, rec_obj, mod_obj) {
     )
 }
 
-# Slide 38
+# Slide 31
 
 cv_splits <- cv_splits %>%
   mutate(
@@ -281,7 +249,7 @@ cv_splits <- cv_splits %>%
       )
   )
 
-# Slide 39
+# Slide 32
 
 library(yardstick)
 
@@ -289,7 +257,7 @@ library(yardstick)
 map_df(cv_splits$pred, metrics, truth = Sale_Price, estimate = .fitted) %>% 
   colMeans
 
-# Slide 40
+# Slide 33
 
 assess_pred <- bind_rows(cv_splits$pred) %>%
   mutate(Sale_Price = 10^Sale_Price,
@@ -300,46 +268,3 @@ ggplot(assess_pred,
   geom_abline(lty = 2) + 
   geom_point(alpha = .4)  + 
   geom_smooth(se = FALSE, col = "red")
-
-# Slide 44
-
-coef_summary <- map(cv_splits$fits, tidy) %>% bind_rows
-head(coef_summary)
-
-# Slide 45
-
-num_pred <- c("Year_Built", "Gr_Liv_Area", 
-              "Full_Bath", "Year_Sold", 
-              "Lot_Area")
-z_lim <- qnorm(c(0.025, 0.975))
-coef_summary %>% 
-  filter(term %in% num_pred) %>% 
-  ggplot(aes(x = term, y = statistic)) + 
-  geom_hline(yintercept = z_lim,
-             lty = 2, col = "red") + 
-  geom_jitter(width = .1, alpha = .4, cex = 2) + 
-  coord_flip() + 
-  xlab("") 
-
-# Slide 46
-
-coef_summary %>% 
-  filter(grepl("^Neighborhood", term)) %>% 
-  ggplot(aes(x = term, y = statistic)) + 
-  geom_hline(
-    yintercept = z_lim,
-    lty = 2, 
-    col = "red"
-  ) + 
-  geom_jitter(
-    width = .1, 
-    alpha = .4, 
-    cex = 2
-  ) + 
-  coord_flip() + 
-  xlab("") + 
-  ylab(
-    paste("Difference from", 
-          levels(ames_test$Neighborhood)[1])
-  ) 
-

@@ -25,145 +25,11 @@ class: center, middle, inverse, title-slide
 
 # Outline
 
-* Performance Measures
 * Example Data
 * Regularized Linear Models
 * Multivariate Adaptive Regression Splines
 * Ensembles of MARS Models
 * Model Comparison via Bayesian Analysis
-
-
----
-layout: false
-class: inverse, middle, center
-
-# Measuring Performance for Numeric Outcomes
-
-
----
-
-# Illustrative Example  &lt;img src="images/yardstick.png" class="title-hex"&gt;
-
-`yardstick` contains the test set results in a data frame called `solubility_test`:
-
-
-```r
-library(yardstick)
-data(solubility_test)
-str(solubility_test, nchar.max = 70)
-```
-
-```
-## 'data.frame':	316 obs. of  2 variables:
-##  $ solubility: num  0.93 0.85 0.81 0.74 0.61 0.58 0.57 0.56 0.52 0.45 ...
-##  $ prediction: num  0.368 -0.15 -0.505 0.54 -0.479 ...
-```
-
-Take 10 minutes and graphically assess the data set. 
-
-How well do you think that the model worked?
-
-
----
-
-# Measuring Performance  &lt;img src="images/yardstick.png" class="title-hex"&gt;
-
-The manner in which we measure the model's efficacy can make a big difference in how the model is tuned and viewed. There are a few different options for summarizing performance, including: 
-
-_Root mean squared error_ (RMSE) the model residuals are computed and squared. They are then averaged and the square-root is used to put the value back into the original units. 
-
-
-```r
-rmse(solubility_test, truth = solubility, estimate = prediction)
-```
-
-```
-## [1] 0.722
-```
-
-RMSE is a good metric since it is in the original units and a direct measure of model _accuracy_.   
-
-
----
-
-# Measuring Performance - R&lt;sup&gt;2&lt;/sup&gt;  &lt;img src="images/yardstick.png" class="title-hex"&gt;
-
-The coefficient of determination (aka R&lt;sup&gt;2&lt;/sup&gt;) is commonly used to evaluate models. In the case of linear regression, R&lt;sup&gt;2&lt;/sup&gt; is the proportion of variation in the data that can be explained by the model. 
-
-Computationally, the most direct method of estimation is to compute the correlation between the observed and predicted values (i.e. R) and square it. 
-
-
-```r
-rsq(solubility_test, truth = solubility, estimate = prediction)
-```
-
-```
-## [1] 0.879
-```
-
-R&lt;sup&gt;2&lt;/sup&gt; can be problematic for a few reasons
-
-* It is a measure of correlation, not accuracy. 
-* It can be artificially inflated when the variation in the outcome is large. 
-
-
----
-
-# Measuring Performance - R&lt;sup&gt;2&lt;/sup&gt;  &lt;img src="images/yardstick.png" class="title-hex"&gt;
-
-There are more traditional estimates but behave poorly when the model is ineffective.  
-
-
-```r
-library(dplyr)
-set.seed(3545)
-solubility_test &lt;- solubility_test %&gt;% mutate(noise = sample(prediction))
-
-rsq(solubility_test, truth = solubility, estimate = noise)
-```
-
-```
-## [1] 0.00449
-```
-
-```r
-rsq_trad(solubility_test, truth = solubility, estimate = noise)
-```
-
-```
-## [1] -0.792
-```
-
-Both RMSE and R&lt;sup&gt;2&lt;/sup&gt; can be sensitive to outliers since they involved squared terms. This may be good or bad, depending on the problem. 
-
-
----
-
-# Measuring Performance - Other Approaches  &lt;img src="images/yardstick.png" class="title-hex"&gt;
-
-* In the case where new data points are being ranked (i.e. the most lucrative customer), using _Spearman's rank correlation_ would be a good choice. 
-
-* Robust measures, such as the mean absolute error (MAE) can also be used. 
-
-* When the outcome is highly skewed, the average _fold-difference_ between the observed and predicted values might be helpful. 
-
-* Try to avoid any discretization procedures such as the percentage of samples that are more than 2-fold wrong.
-
-* The best metrics are those that are the most relevant. These may be complex equations that involve other estimates, such as 
-
-  * customer lifetime value
-  * expected return on an investment
-
-
----
-
-# Diagnosing the Model
-
-How should we graphically evaluate the model without using the test set? 
-
-The assessment sets from resampling can be used to compute and plot the residuals. _Partial residual plots_ can be created where the residuals are plotted against different (potential) predictors to diagnose predictors that should be included in the model. 
-
-In the case of repeated cross-validation (and others), the sample training set sample might be included in multiple assessment sets. In this case, the predictions can be averaged and these means can be used in visualizations. 
 
 
 ---
@@ -247,11 +113,11 @@ M=Manual(M7)
 
 ---
 
-# Hands-On
+# Hands-On: Explore the Car Data
 
+As before, let's take 10 minutes to get familiar with the training set using numerical summaries and plots. 
 
-Get familiar with the training set
- 
+`geom_smooth` is very helpful here to discover the nature of relationships between the outcome (`mpg`) and the potential predictors. 
 
 ???
 
@@ -740,9 +606,9 @@ glmn_mod$pred %&gt;% head(4)
 ```r
 ggplot(glmn_mod$pred, aes(x = obs, y = pred)) +
   geom_abline(col = "green", alpha = .5) + 
+  geom_point(alpha = .3) + 
   geom_smooth(se = FALSE, col = "red", 
-              lty = 2, lwd = 1, alpha = .5) + 
-  geom_point(alpha = .3)
+              lty = 2, lwd = 1, alpha = .5)
 ```
 ]
 .pull-right[
@@ -1065,6 +931,10 @@ mars_mod &lt;- train(
 Running the resampling models (plus the last one), this takes 4.5m on my laptop.
 
 
+??? 
+
+Show `summary(mars_mod$finalModel)` and maybe `cat(format(mars_mod$finalModel))`
+
 ---
 
 # While We Wait, Can I Interest You in Parallelism? 
@@ -1078,6 +948,8 @@ Can we benefit from splitting the fits up to run on multiple cores?
 These speed-ups can be very model- and data-dependent but this pattern generally holds. 
 
 Note that there is little incremental benefit to using more workers than physical cores on the computer. 
+
+(A lot more details can be found in [this blog post](http://appliedpredictivemodeling.com/blog/2018/1/17/parallel-processing))
 
 ]
 .pull-right[
@@ -1318,9 +1190,9 @@ It would appear so...
 ```r
 ggplot(mars_gcv_bag$pred, aes(x = obs, y = pred)) +
   geom_abline(col = "green", alpha = .5) + 
+  geom_point(alpha = .3) + 
   geom_smooth(se = FALSE, col = "red", 
-              lty = 2, lwd = 1, alpha = .5) + 
-  geom_point(alpha = .3)
+              lty = 2, lwd = 1, alpha = .5)
 ```
 ]
 .pull-right[
@@ -1458,8 +1330,8 @@ rmse_mod &lt;- perf_mod(rs, seed = 4344, iter = 5000, metric = "RMSE")
 ## 
 ## SAMPLING FOR MODEL 'continuous' NOW (CHAIN 1).
 ## 
-## Gradient evaluation took 9.2e-05 seconds
-## 1000 transitions using 10 leapfrog steps per transition would take 0.92 seconds.
+## Gradient evaluation took 9.6e-05 seconds
+## 1000 transitions using 10 leapfrog steps per transition would take 0.96 seconds.
 ## Adjust your expectations accordingly!
 ## 
 ## 
@@ -1476,15 +1348,15 @@ rmse_mod &lt;- perf_mod(rs, seed = 4344, iter = 5000, metric = "RMSE")
 ## Iteration: 4500 / 5000 [ 90%]  (Sampling)
 ## Iteration: 5000 / 5000 [100%]  (Sampling)
 ## 
-##  Elapsed Time: 0.588519 seconds (Warm-up)
-##                0.657722 seconds (Sampling)
-##                1.24624 seconds (Total)
+##  Elapsed Time: 0.582341 seconds (Warm-up)
+##                0.634944 seconds (Sampling)
+##                1.21728 seconds (Total)
 ## 
 ## 
 ## SAMPLING FOR MODEL 'continuous' NOW (CHAIN 2).
 ## 
-## Gradient evaluation took 1.7e-05 seconds
-## 1000 transitions using 10 leapfrog steps per transition would take 0.17 seconds.
+## Gradient evaluation took 1.9e-05 seconds
+## 1000 transitions using 10 leapfrog steps per transition would take 0.19 seconds.
 ## Adjust your expectations accordingly!
 ## 
 ## 
@@ -1501,37 +1373,12 @@ rmse_mod &lt;- perf_mod(rs, seed = 4344, iter = 5000, metric = "RMSE")
 ## Iteration: 4500 / 5000 [ 90%]  (Sampling)
 ## Iteration: 5000 / 5000 [100%]  (Sampling)
 ## 
-##  Elapsed Time: 0.643331 seconds (Warm-up)
-##                0.543766 seconds (Sampling)
-##                1.1871 seconds (Total)
+##  Elapsed Time: 0.604302 seconds (Warm-up)
+##                0.519748 seconds (Sampling)
+##                1.12405 seconds (Total)
 ## 
 ## 
 ## SAMPLING FOR MODEL 'continuous' NOW (CHAIN 3).
-## 
-## Gradient evaluation took 1.5e-05 seconds
-## 1000 transitions using 10 leapfrog steps per transition would take 0.15 seconds.
-## Adjust your expectations accordingly!
-## 
-## 
-## Iteration:    1 / 5000 [  0%]  (Warmup)
-## Iteration:  500 / 5000 [ 10%]  (Warmup)
-## Iteration: 1000 / 5000 [ 20%]  (Warmup)
-## Iteration: 1500 / 5000 [ 30%]  (Warmup)
-## Iteration: 2000 / 5000 [ 40%]  (Warmup)
-## Iteration: 2500 / 5000 [ 50%]  (Warmup)
-## Iteration: 2501 / 5000 [ 50%]  (Sampling)
-## Iteration: 3000 / 5000 [ 60%]  (Sampling)
-## Iteration: 3500 / 5000 [ 70%]  (Sampling)
-## Iteration: 4000 / 5000 [ 80%]  (Sampling)
-## Iteration: 4500 / 5000 [ 90%]  (Sampling)
-## Iteration: 5000 / 5000 [100%]  (Sampling)
-## 
-##  Elapsed Time: 0.634543 seconds (Warm-up)
-##                0.627805 seconds (Sampling)
-##                1.26235 seconds (Total)
-## 
-## 
-## SAMPLING FOR MODEL 'continuous' NOW (CHAIN 4).
 ## 
 ## Gradient evaluation took 1.8e-05 seconds
 ## 1000 transitions using 10 leapfrog steps per transition would take 0.18 seconds.
@@ -1551,9 +1398,34 @@ rmse_mod &lt;- perf_mod(rs, seed = 4344, iter = 5000, metric = "RMSE")
 ## Iteration: 4500 / 5000 [ 90%]  (Sampling)
 ## Iteration: 5000 / 5000 [100%]  (Sampling)
 ## 
-##  Elapsed Time: 0.581073 seconds (Warm-up)
-##                0.536392 seconds (Sampling)
-##                1.11746 seconds (Total)
+##  Elapsed Time: 0.58496 seconds (Warm-up)
+##                0.594342 seconds (Sampling)
+##                1.1793 seconds (Total)
+## 
+## 
+## SAMPLING FOR MODEL 'continuous' NOW (CHAIN 4).
+## 
+## Gradient evaluation took 1.7e-05 seconds
+## 1000 transitions using 10 leapfrog steps per transition would take 0.17 seconds.
+## Adjust your expectations accordingly!
+## 
+## 
+## Iteration:    1 / 5000 [  0%]  (Warmup)
+## Iteration:  500 / 5000 [ 10%]  (Warmup)
+## Iteration: 1000 / 5000 [ 20%]  (Warmup)
+## Iteration: 1500 / 5000 [ 30%]  (Warmup)
+## Iteration: 2000 / 5000 [ 40%]  (Warmup)
+## Iteration: 2500 / 5000 [ 50%]  (Warmup)
+## Iteration: 2501 / 5000 [ 50%]  (Sampling)
+## Iteration: 3000 / 5000 [ 60%]  (Sampling)
+## Iteration: 3500 / 5000 [ 70%]  (Sampling)
+## Iteration: 4000 / 5000 [ 80%]  (Sampling)
+## Iteration: 4500 / 5000 [ 90%]  (Sampling)
+## Iteration: 5000 / 5000 [100%]  (Sampling)
+## 
+##  Elapsed Time: 0.571054 seconds (Warm-up)
+##                0.50438 seconds (Sampling)
+##                1.07543 seconds (Total)
 ```
 
 
@@ -1678,9 +1550,9 @@ rmse(car_test, truth = mpg, estimate = pred)
 ```r
 ggplot(car_test, aes(x = mpg, y = pred)) +
   geom_abline(col = "green", alpha = .5) + 
+  geom_point(alpha = .3) + 
   geom_smooth(se = FALSE, col = "red", 
-              lty = 2, lwd = 1, alpha = .5) + 
-  geom_point(alpha = .3)
+              lty = 2, lwd = 1, alpha = .5)
 ```
 
 There are fewer new hybrid and electric models in the 2018 data. 

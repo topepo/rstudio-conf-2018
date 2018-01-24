@@ -231,7 +231,7 @@ plot(
 
 The ROC curve has some major advantages:
 
- * It can allow models be optimized for performance before a definitive cutoff is determined.
+ * It can allow models to be optimized for performance before a definitive cutoff is determined.
  
  * It is _robust_ to class imbalances; no matter the event rate, it does a good job at characterizing model performance. 
  
@@ -294,7 +294,7 @@ table(okc_train$Class)
 
 # Dealing with Class Imbalances
 
-In out data, only 18.2% of the profiles are in STEM professions. This complicates the analysis since many models will overfit to the majority class.
+In our data, only 18.2% of the profiles are in STEM professions. This complicates the analysis since many models will overfit to the majority class.
 
 There are two main strategies to deal with this:
 
@@ -309,7 +309,7 @@ Cost-sensitive models tend to only produce hard classifications so we will focus
 
 # Class Imbalance Sampling
 
-There are a variety of methods for subsampling the data. Some filter or replicate rows in the training set while others try to _synthesize_ new data points to balance the classes. 
+There are a variety of methods for subsampling the data. Some exclude or replicate rows in the training set while others try to _synthesize_ new data points to balance the classes. 
 
 The simplest method for dealing with the problem is to _down-sample_ the data to make the number of STEM and non-STEM profiles the same. 
 
@@ -375,8 +375,6 @@ layout: false
 class: inverse, middle, center
 
 # Classification Trees
-
-
 
 
 ---
@@ -498,16 +496,22 @@ cart_mod$finalModel
 ## 
 ##  1) root 1458 729 stem (0.5000 0.5000)  
 ##    2) male&gt;=0.5 1018 414 stem (0.5933 0.4067)  
-##      4) education=college_university,dropped_out_of_college_university,dropped_out_of_high_school,dropped_out_of_masters_program,dropped_out_of_ph_d_program,graduated_from_college_university,graduated_from_masters_program,graduated_from_ph_d_program,graduated_from_space_camp,graduated_from_two_year_college,masters_program,working_on_masters_program,working_on_space_camp 806 272 stem (0.6625 0.3375)  
+##      4) education=college_university,dropped_out_of_college_university,dropped_out_of_high_school,dropped_out_of_masters_program,dropped_out_of_ph_d_program,
+##                   graduated_from_college_university,graduated_from_masters_program,graduated_from_ph_d_program,graduated_from_space_camp,graduated_from_two_year_college,
+##                   masters_program,working_on_masters_program,working_on_space_camp 806 272 stem (0.6625 0.3375)  
 ##        8) tech&gt;=0.5 190  29 stem (0.8474 0.1526) *
 ##        9) tech&lt; 0.5 616 243 stem (0.6055 0.3945)  
 ##         18) income=missing,inc50000,inc60000,inc70000,inc80000,inc100000,inc150000 580 215 stem (0.6293 0.3707)  
-##           36) where_town=alameda,belmont,benicia,berkeley,castro_valley,daly_city,emeryville,fairfax,hayward,hercules,larkspur,martinez,menlo_park,millbrae,mountain_view,novato,oakland,pacifica,palo_alto,redwood_city,san_bruno,san_francisco,san_mateo,san_pablo,san_rafael,sausalito,south_san_francisco,stanford,vallejo 546 189 stem (0.6538 0.3462)  
+##           36) where_town=alameda,belmont,benicia,berkeley,castro_valley,daly_city,emeryville,fairfax,hayward,hercules,larkspur,martinez,menlo_park,millbrae,mountain_view,novato,
+##                          oakland,pacifica,palo_alto,redwood_city,san_bruno,san_francisco,san_mateo,san_pablo,san_rafael,sausalito,south_san_francisco,stanford,vallejo 
+##                          546 189 stem (0.6538 0.3462)  
 ##             72) diet=diet_missing,anything,mostly_anything,strictly_anything,strictly_other,strictly_vegetarian 508 163 stem (0.6791 0.3209) *
 ##             73) diet=mostly_halal,mostly_other,mostly_vegan,mostly_vegetarian,other,vegan,vegetarian 38  12 other (0.3158 0.6842) *
 ##           37) where_town=albany,burlingame,el_cerrito,el_sobrante,pleasant_hill,richmond,san_anselmo,san_carlos,san_leandro,walnut_creek 34   8 other (0.2353 0.7647) *
 ##         19) income=inc20000,inc30000,inc40000,inc250000,inc1000000 36   8 other (0.2222 0.7778) *
-##      5) education=ed_missing,dropped_out_of_space_camp,dropped_out_of_two_year_college,graduated_from_high_school,graduated_from_law_school,graduated_from_med_school,high_school,two_year_college,working_on_college_university,working_on_law_school,working_on_med_school,working_on_ph_d_program,working_on_two_year_college 212  70 other (0.3302 0.6698)  
+##      5) education=ed_missing,dropped_out_of_space_camp,dropped_out_of_two_year_college,graduated_from_high_school,graduated_from_law_school,graduated_from_med_school,high_school,
+##                   two_year_college,working_on_college_university,working_on_law_school,working_on_med_school,working_on_ph_d_program,working_on_two_year_college 
+##                   212  70 other (0.3302 0.6698)  
 ##       10) tech&gt;=0.5 43  16 stem (0.6279 0.3721) *
 ##       11) tech&lt; 0.5 169  43 other (0.2544 0.7456) *
 ##    3) male&lt; 0.5 440 125 other (0.2841 0.7159)  
@@ -517,6 +521,8 @@ cart_mod$finalModel
 ##      7) tech&lt; 0.5 374  84 other (0.2246 0.7754) *
 ```
 ]
+  
+  Note that there are 10 terminal nodes and thus 10 possible probability values. 
 
 ---
 
@@ -591,7 +597,7 @@ confusionMatrix(cart_mod)
 # Variable Importance Scores &lt;img src="images/ggplot2.png" class="title-hex"&gt;
 
 .pull-left[
-CART tracks the decrease in impurity of the nodes are splits are made. 
+CART tracks the decrease in impurity in the nodes when splits are made. 
 
 These can be aggregated over the tree to produce another general importance score. 
 
@@ -604,24 +610,26 @@ Turning these off gives only the splits uses in the official tree.
 
 ```r
 cart_imp &lt;- varImp(cart_mod, scale = FALSE, 
-                   surrogates = FALSE, competes = FALSE)
+                   surrogates = FALSE, 
+                   competes = FALSE)
 ggplot(cart_imp, top = 7) + xlab("")
 ```
 
-&lt;img src="Part_5_Classification_files/figure-html/cart-imp-1.svg" width="65%" style="display: block; margin: auto;" /&gt;
+&lt;img src="Part_5_Classification_files/figure-html/cart-imp-1.svg" width="75%" style="display: block; margin: auto;" /&gt;
 ]
 
 
 ---
 
-# But I Don't Want to be a Dummy!
+# Hands-On: I Don't Want to be a Dummy!
 
-Take the previous code and use the formula method to create the model. 
+Take the previous code and _use the formula method_ to create the model. For `train`, the formula method _always_ creates dummy variables for predictors that are factors. 
 
 Is there any difference in performance? 
 
 Is the final model affected? How? 
 
+Take 15 min to answer these questions. 
 
 
 ---
@@ -761,7 +769,7 @@ plot_roc(cart_bag$pred,
          add = TRUE)
 ```
 
-Although the bagged model's curve is uniformly better than the single tree, their performance is very similar for the cutoffs closest to upper left-had corner. 
+Although the bagged model's curve is uniformly better than the single tree, their performance is very similar for the cutoffs closest to upper left-hand corner. 
 
 ]
 .pull-right[
@@ -790,6 +798,20 @@ ggplot(bag_imp, top = 30) + xlab("")
 &lt;img src="Part_5_Classification_files/figure-html/bag-imp-1.svg" width="90%" style="display: block; margin: auto;" /&gt;
 ]
 
+
+---
+
+# Hands-On: How Many Trees?
+
+As previously mentioned, `caret` uses `ipred::bagging` to create the model. 
+
+Look at the help function to determine which `bagging` argument controls the number of bootstraps.
+
+How can we make `train` use a different value? (hint: `?train`)
+
+Does changing this affect the area under the ROC curve? 
+
+Take another 10 mins.
 
 
 ---
@@ -831,29 +853,12 @@ In English:
 
 &gt; Given our predictor data, what is the probability of each class? 
 
-The _prior_ is the prevalence that was mentioned earlier (e.g. the rate of STEM profiles). Can can be estimated or set. 
+The _prior_ is the prevalence that was mentioned earlier (e.g. the rate of STEM profiles). This can be estimated or set. 
 
 Most of the action is in `Pr[Predictors|Class]`, which is based on the observed training set.
 
 Predictions are based on a blend of the traning data and our _prior belief_ about the outcome... 
 
-
----
-
-# "Shrinkage" Properties of Bayesian Models
-
-.pull-left[
-When our observed data is of high quality (top panel), the likelihood is narrow and dominates the equation.  
-
-However, when our observed information is poor, the likelihood can be very wide and diffuse. 
-
-When this occurs, Bayes' rule relies more on our prior belief than on the data in-hand. 
-
-This is generally called "shrinkage". 
-]
-.pull-right[
-&lt;img src="Part_5_Classification_files/figure-html/nb-shrink-1.svg" width="90%" style="display: block; margin: auto;" /&gt;
-]
 
 
 ---
@@ -862,7 +867,7 @@ This is generally called "shrinkage".
 
 Determining `\(Pr[Predictors|Class]\)` can be very difficult without strong assumptions because it measures the _joint probability_ of all of the predictors. 
 
-* For example, what is the correlation between a persons essay length and their religion? 
+* For example, what is the correlation between a person's essay length and their religion? 
 
 To resolve this, **naive** Bayes assumes that all of the predictors are _independent_ and that their probabilities can be estimated separately. 
 
@@ -916,7 +921,7 @@ Suppose the red dot is a new sample.
 
 
 
-For an Atheist who wrote 10&lt;sup&gt;8&lt;/sup&gt; words, their likelihood values were:
+For an Atheist who wrote _e_&lt;sup&gt;8&lt;/sup&gt; words, their likelihood values were:
 
 * `\(Pr[Essay\: Length = 8|STEM] \times Pr[Religion=Atheism|STEM]\)` = 0.518 x 0.207 = 0.107
 
@@ -932,6 +937,24 @@ However, when these are combined with the _prior probability_ for each class, th
 We don't need to compute the evidence; we can just normalize these values to add up to 1. 
 
 The results is that the _posterior probability_ that this person is in a STEM field is 35.1%.
+
+
+---
+
+# "Shrinkage" Properties of Bayesian Models
+
+.pull-left[
+When our observed data is of high quality (top panel), the likelihood is narrow and dominates the equation.  
+
+However, when our observed information is poor, the likelihood can be very wide and diffuse. 
+
+When this occurs, Bayes' rule relies more on our prior belief than on the data in-hand. 
+
+This is generally called "shrinkage". 
+]
+.pull-right[
+&lt;img src="Part_5_Classification_files/figure-html/nb-shrink-1.svg" width="90%" style="display: block; margin: auto;" /&gt;
+]
 
 
 ---
@@ -1012,7 +1035,15 @@ We can also modulate the smoothness of the density estimation for the continuous
 smoothing_grid &lt;- expand.grid(usekernel = TRUE, fL = 0, adjust = seq(0.5, 3.5, by = 0.5))
 ```
 
-
+???
+ggplot(okc_train, aes(x = essay_length)) + 
+   geom_line(stat = "density", adjust = 3) + 
+  geom_line(stat = "density", adjust = .3, col = "red")
+  
+ggplot(okc_train, aes(x = science)) + 
+   geom_line(stat = "density") 
+   
+   
 ---
 
 # Naive Bayes Training
@@ -1090,8 +1121,8 @@ roc_mod &lt;- perf_mod(rs, seed = 2560, iter = 5000)
 ## 
 ## SAMPLING FOR MODEL 'continuous' NOW (CHAIN 1).
 ## 
-## Gradient evaluation took 0.000238 seconds
-## 1000 transitions using 10 leapfrog steps per transition would take 2.38 seconds.
+## Gradient evaluation took 0.000103 seconds
+## 1000 transitions using 10 leapfrog steps per transition would take 1.03 seconds.
 ## Adjust your expectations accordingly!
 ## 
 ## 
@@ -1108,9 +1139,9 @@ roc_mod &lt;- perf_mod(rs, seed = 2560, iter = 5000)
 ## Iteration: 4500 / 5000 [ 90%]  (Sampling)
 ## Iteration: 5000 / 5000 [100%]  (Sampling)
 ## 
-##  Elapsed Time: 0.90902 seconds (Warm-up)
-##                0.660353 seconds (Sampling)
-##                1.56937 seconds (Total)
+##  Elapsed Time: 0.869796 seconds (Warm-up)
+##                0.638065 seconds (Sampling)
+##                1.50786 seconds (Total)
 ## 
 ## 
 ## SAMPLING FOR MODEL 'continuous' NOW (CHAIN 2).
@@ -1133,15 +1164,15 @@ roc_mod &lt;- perf_mod(rs, seed = 2560, iter = 5000)
 ## Iteration: 4500 / 5000 [ 90%]  (Sampling)
 ## Iteration: 5000 / 5000 [100%]  (Sampling)
 ## 
-##  Elapsed Time: 0.790627 seconds (Warm-up)
-##                0.467385 seconds (Sampling)
-##                1.25801 seconds (Total)
+##  Elapsed Time: 0.791035 seconds (Warm-up)
+##                0.452844 seconds (Sampling)
+##                1.24388 seconds (Total)
 ## 
 ## 
 ## SAMPLING FOR MODEL 'continuous' NOW (CHAIN 3).
 ## 
-## Gradient evaluation took 1.8e-05 seconds
-## 1000 transitions using 10 leapfrog steps per transition would take 0.18 seconds.
+## Gradient evaluation took 1.7e-05 seconds
+## 1000 transitions using 10 leapfrog steps per transition would take 0.17 seconds.
 ## Adjust your expectations accordingly!
 ## 
 ## 
@@ -1158,9 +1189,9 @@ roc_mod &lt;- perf_mod(rs, seed = 2560, iter = 5000)
 ## Iteration: 4500 / 5000 [ 90%]  (Sampling)
 ## Iteration: 5000 / 5000 [100%]  (Sampling)
 ## 
-##  Elapsed Time: 0.73441 seconds (Warm-up)
-##                0.353858 seconds (Sampling)
-##                1.08827 seconds (Total)
+##  Elapsed Time: 0.748473 seconds (Warm-up)
+##                0.36891 seconds (Sampling)
+##                1.11738 seconds (Total)
 ## 
 ## 
 ## SAMPLING FOR MODEL 'continuous' NOW (CHAIN 4).
@@ -1183,9 +1214,9 @@ roc_mod &lt;- perf_mod(rs, seed = 2560, iter = 5000)
 ## Iteration: 4500 / 5000 [ 90%]  (Sampling)
 ## Iteration: 5000 / 5000 [100%]  (Sampling)
 ## 
-##  Elapsed Time: 0.811245 seconds (Warm-up)
-##                0.338794 seconds (Sampling)
-##                1.15004 seconds (Total)
+##  Elapsed Time: 0.80474 seconds (Warm-up)
+##                0.333523 seconds (Sampling)
+##                1.13826 seconds (Total)
 ```
 
 

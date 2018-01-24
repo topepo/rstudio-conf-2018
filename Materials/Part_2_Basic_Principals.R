@@ -14,7 +14,7 @@ thm <- theme_bw() +
   )
 theme_set(thm)
 
-# Slide 9
+# Slide 10
 
 library(AmesHousing)
 ames <- make_ames()
@@ -31,7 +31,7 @@ ames_test  <- testing(data_split)
 
 nrow(ames_train)/nrow(ames)
 
-# Slide 10
+# Slide 11
 
 ggplot(ames_train, aes(x = Sale_Price)) + 
   geom_line(stat = "density", trim = TRUE) + 
@@ -39,7 +39,7 @@ ggplot(ames_train, aes(x = Sale_Price)) +
             stat = "density", 
             trim = TRUE, col = "red") 
 
-# Slide 14
+# Slide 15
 
 simple_lm <- lm(log10(Sale_Price) ~ Longitude + Latitude, data = ames_train)
 
@@ -47,18 +47,18 @@ library(broom)
 simple_lm_values <- augment(simple_lm)
 names(simple_lm_values)
 
-# Slide 16
+# Slide 19
 
 summary(simple_lm)
 
-# Slide 25
+# Slide 28
 
 library(rsample)
 set.seed(2453)
 cv_splits <- vfold_cv(ames_train, v = 10, strata = "Sale_Price")
 cv_splits
 
-# Slide 26
+# Slide 29
 
 # The `split` objects contain the information about the sample sizes
 cv_splits$splits[[1]]
@@ -67,9 +67,11 @@ cv_splits$splits[[1]]
 analysis(cv_splits$splits[[1]]) %>% dim()
 assessment(cv_splits$splits[[1]]) %>% dim()
 
-# Slide 27
+# Slide 30
 
 library(yardstick)
+library(dplyr)
+
 lm_fit <- function(data_split, ...) 
   lm(..., data = analysis(data_split))
 
@@ -97,17 +99,16 @@ model_perf <- function(data_split, mod_obj) {
   data.frame(rmse = rmse, rsq = rsq)
 }
 
-# Slide 28
+# Slide 31
 
 library(purrr)
 cv_splits <- cv_splits %>%
   mutate(lm_mod = map(splits, lm_fit, formula = form))
 cv_splits
 
-# Slide 29
+# Slide 32
 
 # map2 can be used to move over two objects of equal length
-library(dplyr)
 lm_res <- map2_df(cv_splits$splits, cv_splits$lm_mod, model_perf) %>% 
   dplyr::rename(rmse_simple = rmse, rsq_simple = rsq)
 head(lm_res, 3)
@@ -118,7 +119,7 @@ cv_splits <- cv_splits %>% bind_cols(lm_res)
 ## Rename the columns and compute the resampling estimates:
 cv_splits %>% select(rmse_simple, rsq_simple) %>% colMeans
 
-# Slide 31
+# Slide 34
 
 get_assessment <- function(splits, model) 
   augment(model, newdata = assessment(splits)) %>%
@@ -128,7 +129,7 @@ holdout_results <- map2_df(cv_splits$splits, cv_splits$lm_mod, get_assessment)
 holdout_results %>% dim()
 ames_train %>% dim()
 
-# Slide 35
+# Slide 39
 
 library(caret)
 
@@ -144,7 +145,7 @@ repredict <- data.frame(price = log10(ames_train$Sale_Price)) %>%
 
 repredict %>% rsq(truth = "price", estimate = "pred") # <- the ruckus is here
 
-# Slide 36
+# Slide 40
 
 knn_fit <- function(data_split, ...) 
   knnreg(..., data = analysis(data_split))
@@ -160,7 +161,7 @@ cv_splits <- cv_splits %>% bind_cols(knn_res)
 
 colMeans(knn_res)
 
-# Slide 38
+# Slide 42
 
 rs_comp <- data.frame(
 	rmse = c(cv_splits$rmse_simple, cv_splits$rmse_knn),
@@ -173,11 +174,11 @@ ggplot(rs_comp, aes(x = Model, y = rmse, group = Resample, col = Resample)) +
   geom_line() + 
   theme(legend.position = "none")
 
-# Slide 39
+# Slide 43
 
 t.test(cv_splits$rmse_simple, cv_splits$rmse_knn, paired = TRUE)
 
-# Slide 45
+# Slide 49
 
 knn_rmse <- function(k, split) {
 	mod <- knnreg(log10(Sale_Price) ~ Longitude + Latitude, 
@@ -190,7 +191,8 @@ knn_rmse <- function(k, split) {
 		rmse(Sale_Price, pred)
 }
 
-# Slide 46
+# Slide 50
+library(dplyr)
 
 knn_grid <- function(split) {
 	# Create grid
@@ -203,18 +205,18 @@ knn_grid <- function(split) {
     )
 }
 
-# Slide 47
+# Slide 51
 
 iter_over_resamples <- 
 	function(resamp) 
 		map_df(resamp$splits, knn_grid)
 
-# Slide 48
+# Slide 52
 
 knn_tune_res <- iter_over_resamples(cv_splits)
 knn_tune_res %>% head(15)
 
-# Slide 49
+# Slide 53
 
 rmse_by_k <- knn_tune_res %>%
   group_by(k) %>%
@@ -223,7 +225,7 @@ rmse_by_k <- knn_tune_res %>%
 ggplot(rmse_by_k, aes(x = k, y = rmse)) + 
   geom_point() + geom_line()
 
-# Slide 50
+# Slide 54
 
 best_k <- knn_tune_res %>%
   group_by(id) %>%
@@ -240,7 +242,7 @@ ggplot(rmse_by_k, aes(x = k, y = rmse)) +
              alpha = .5, cex = 2)+
   theme(legend.position = "none")
 
-# Slide 51
+# Slide 55
 
 final_knn <- knnreg(log10(Sale_Price) ~ Longitude + Latitude,
                     data = ames_train,
