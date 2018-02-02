@@ -1,0 +1,83 @@
+---
+title: "Presentation"
+author: Your Name Here
+output:
+  xaringan::moon_reader:
+    css: ["mtheme_max.css", "fonts_mtheme_max.css"]  
+    self_contained: false
+    lib_dir: libs
+    nature:
+      ratio: '16:9'
+      highlightLanguage: R
+      countIncrementalSlides: false   
+---
+
+```{r startup, include = FALSE, message = FALSE, warning = FALSE}
+# This is good for getting the ggplot background consistent with
+# the html background color
+library(ggplot2)
+thm <- theme_bw() + 
+  theme(
+    panel.background = element_rect(fill = "transparent", colour = NA), 
+    plot.background = element_rect(fill = "transparent", colour = NA),
+    legend.position = "top",
+    legend.background = element_rect(fill = "transparent", colour = NA),
+    legend.key = element_rect(fill = "transparent", colour = NA)
+  )
+theme_set(thm)
+```
+
+# Outline
+
+* Something
+* Something else
+* That other thing
+
+
+---
+layout: false
+class: inverse, middle, center
+
+# Heading Text
+
+---
+
+# Some Acronyms and Codes
+
+.pull-left[
+Test or code chunks for the lhs
+]
+.pull-right[
+rhs bits
+]
+
+---
+
+# Plot on the entire slide with a hex sticker <img src="images/tidyposterior.png" class="title-hex">
+
+```{r example-plot, fig.width=6, fig.height=5.5,  out.width = '40%', fig.align='center', dev = 'svg', dev.args = list(bg = "transparent")}
+ggplot(mtcars, aes(x = disp, y = mpg))+ 
+  geom_point()
+```
+
+---
+
+# Plots on one side
+
+.pull-left[
+show some code here but don't make image:
+
+```{r just-dont, eval = FALSE}
+ggplot(mtcars, aes(x = disp, y = mpg))+ 
+  geom_point()
+```
+
+]
+.pull-right[
+
+```{r example-plot-again, echo = FALSE, fig.width=6, fig.height=5.5,  out.width = '90%', fig.align='center', dev = 'svg', dev.args = list(bg = "transparent")}
+ggplot(mtcars, aes(x = disp, y = mpg))+ 
+  geom_point()
+```
+]
+
